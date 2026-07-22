@@ -218,7 +218,8 @@ nav button.active {
 .player-top-down{position:absolute;left:20px;top:max(env(safe-area-inset-top),32px);color:#fff;background:none;border:none;padding:4px;cursor:pointer}
 
 .stage{padding:0 24px 24px;display:flex;justify-content:center;margin-top:auto}
-.cover-square{width:100%;max-width:380px;aspect-ratio:1;border-radius:18px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+.cover-square{width:100%;max-width:320px;aspect-ratio:1;border-radius:18px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,0.5);transition: transform 0.3s ease, box-shadow 0.3s ease;}
+.player.playing .cover-square {transform: scale(1.03);box-shadow: 0 16px 50px rgba(0,0,0,0.7);}
 
 .track-info{display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:12px}
 .track-info .txt{flex:1;min-width:0}
@@ -242,7 +243,7 @@ nav button.active {
 .controls button.sm{color:rgba(255,255,255,0.5)}
 .play-btn{
   width:96px;height:84px;border-radius:36px;
-  background:#fcd4d4;
+  background:#fcd4d4 !important;
   display:grid;place-items:center;color:#000!important;
 }
 .play-btn svg{width:32px;height:32px;fill:currentColor}
@@ -460,20 +461,7 @@ svg{display:block}
         </button>
       </div>
 
-      <div class="util-bar">
-        <button class="util-btn" onclick="state.view='queue'; renderPanel();"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Cola</button>
-        <button class="util-btn circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
-        <button class="util-btn" onclick="state.view='lyrics'; renderPanel();"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="12" x2="10" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>Letras</button>
-      </div>
-    
-      <div class="panel" id="panel">
-        <div class="panel-grip"></div>
-        <div class="panel-head">
-          <h3 id="panelTitle">Cola de reproducción</h3>
-          <button id="panelAction">Limpiar</button>
-        </div>
-        <div id="panelBody"></div>
-      </div>
+
     </div> <!-- closes .player-inner -->
   </div> <!-- closes .player -->
 
@@ -837,58 +825,7 @@ function buildWave(){
   };
 }
 
-function renderPanel(){
-  const body = $('#panelBody');
-  body.innerHTML = '';
-  if(state.view === 'queue'){
-    $('#panelTitle').textContent = 'Cola de reproducción';
-    $('#panelAction').textContent = 'Limpiar';
-    $('#panelAction').onclick = () => { state.queue = []; renderPanel(); };
-    if(!state.queue.length){
-      body.innerHTML = '<div class="empty" style="padding:30px"><h3>La cola está vacía</h3><p>Toca una canción para agregarla.</p></div>';
-      return;
-    }
-    state.queue.forEach((i,pos)=>{
-      const t = LIB[i];
-      const r = document.createElement('div'); r.className='queue-row';
-      const g = document.createElement('span'); g.className='grip'; g.innerHTML = ICON.grip;
-      r.append(g, artEl(t));
-      const m = document.createElement('div'); m.className='meta';
-      m.innerHTML = '<h4></h4><p></p>';
-      m.querySelector('h4').textContent = t.title;
-      m.querySelector('p').textContent = t.artist;
-      r.append(m);
-      const d = document.createElement('span'); d.className='dur'; d.textContent = fmt(t.dur);
-      const k = document.createElement('span'); k.className='kebab'; k.innerHTML = ICON.x;
-      k.title = 'Quitar de la cola';
-      k.onclick = e => { e.stopPropagation(); state.queue.splice(pos,1); renderPanel(); };
-      r.append(d,k);
-      r.onclick = () => { state.idx = i; state.t=0; play(true); };
-      body.append(r);
-    });
-  } else {
-    $('#panelTitle').textContent = 'Letra';
-    $('#panelAction').textContent = 'Agregar';
-    $('#panelAction').onclick = addLyrics;
-    const saved = cur().lyrics;
-    if(saved){
-      const p = document.createElement('div'); p.className='lyrics';
-      p.textContent = saved;
-      body.append(p);
-    } else {
-      const d = document.createElement('div'); d.className='lyrics-empty';
-      d.innerHTML = `<p>Todavía no has guardado la letra de esta canción.<br>Pégala una vez y queda disponible sin conexión.</p>`;
-      const b = document.createElement('button'); b.textContent = 'Agregar letra';
-      b.onclick = addLyrics;
-      d.append(b);
-      body.append(d);
-    }
-  }
-}
-function addLyrics(){
-  const v = prompt('Pega la letra de «' + cur().title + '»');
-  if(v && v.trim()){ cur().lyrics = v.trim(); renderPanel(); }
-}
+function renderPanel(){}
 
 function renderTrack(){
   const t = cur();
@@ -933,6 +870,11 @@ function tickReal(){
 function setPlaying(on){
   state.playing = on;
   $('#playBtn').innerHTML = on ? ICON.pauseBig : ICON.playBig;
+  if(on) {
+    $('#player').classList.add('playing');
+  } else {
+    $('#player').classList.remove('playing');
+  }
   clearInterval(state.timer);
   if(on) state.timer = setInterval(tickReal, 250);
 }
