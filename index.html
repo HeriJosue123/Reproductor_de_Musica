@@ -834,13 +834,13 @@ function scheduleYT(q){
 
 async function fetchYT(q, seq){
   const res = $('#searchResults');
-  res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En Apple Music</h2></div>`);
+  res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En YouTube</h2></div>`);
   const loading = document.createElement('div');
   loading.className = 'empty'; loading.style.padding = '24px';
-  loading.innerHTML = '<p>Buscando en catálogo oficial...</p>';
+  loading.innerHTML = '<p>Buscando en YouTube…</p>';
   res.append(loading);
   try{
-    const data = await searchAppleMusic(q);
+    const data = await searchYouTube(q);
     if(seq !== searchSeq) return;
     loading.remove();
     if(data.error){
@@ -850,10 +850,11 @@ async function fetchYT(q, seq){
     }
     if(!data.items || !data.items.length){
       const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
-      e.innerHTML = '<p>Sin resultados en Apple Music.</p>';
+      e.innerHTML = '<p>Sin resultados en YouTube.</p>';
       res.append(e); return;
     }
-    data.items.forEach(it => res.append(ytRow({ yt:null, title:it.title, artist:it.artist, dur:0, cover:it.thumb })));
+    const ranked = rankByRelevance(q, data.items);
+    (ranked.length ? ranked : data.items).forEach(it => res.append(ytRow({ yt:it.yt, title:it.title, artist:it.artist, dur:0, cover:it.thumb })));
   }catch(e){
     if(seq !== searchSeq) return;
     loading.remove();
