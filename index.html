@@ -59,17 +59,21 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
 .section-head h2{font-size:17px;font-weight:700;letter-spacing:-.01em}
 .section-head a{font-size:13px;font-weight:600;color:var(--accent);text-decoration:none}
 
-/* carátulas generadas */
+/* carátulas */
 .art{border-radius:10px;position:relative;overflow:hidden;flex:none;background:#211d2e}
-.art::after{content:'';position:absolute;inset:0;background:
+.art::after{content:'';position:absolute;inset:0;z-index:0;background:
   radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 55%),
   linear-gradient(150deg, var(--c1), var(--c2));}
+.art .art-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
 .art.round{border-radius:50%}
 
 /* ---------- Inicio ---------- */
+.apphead{text-align:center;padding:6px 20px 4px}
+.apphead h1{font-size:23px;font-weight:800;letter-spacing:-.02em}
+.apphead p{color:var(--muted);font-size:13px;margin-top:4px}
 .hero-greet{font-size:24px;font-weight:800;letter-spacing:-.02em}
 .hero-sub{color:var(--muted);font-size:14px;margin-top:4px}
-.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .quick button{
   display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--line);
   border-radius:10px;padding:0;height:56px;color:var(--text);font:inherit;font-size:13px;font-weight:700;
@@ -216,8 +220,8 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
 #ytHost{position:absolute;width:1px;height:1px;left:-9999px;top:0;opacity:0;pointer-events:none}
 .player-top .label{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 
-.stage{padding:26px 28px 0;display:flex;justify-content:center}
-.cover-square{width:100%;aspect-ratio:1;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.stage{padding:14px 28px 0;display:flex;justify-content:center}
+.cover-square{width:min(340px,44vh,80vw);aspect-ratio:1;height:auto;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
 .cover-round-wrap{position:relative;width:250px;height:250px}
 .cover-round-wrap .art{position:absolute;inset:14px;border-radius:50%;box-shadow:0 20px 50px rgba(0,0,0,.6)}
 .ring{position:absolute;inset:0;transform:rotate(-90deg)}
@@ -226,7 +230,7 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
 .ring .prog{stroke:var(--accent);stroke-linecap:round;filter:drop-shadow(0 0 6px var(--accent-glow));transition:stroke-dashoffset .25s linear}
 .ring .knob{fill:var(--accent);filter:drop-shadow(0 0 6px var(--accent-glow))}
 
-.track-info{display:flex;align-items:flex-start;gap:14px;padding:26px 24px 0}
+.track-info{display:flex;align-items:flex-start;gap:14px;padding:16px 24px 0}
 .track-info .txt{flex:1;min-width:0}
 .track-info h2{font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
 .track-info .artist{display:flex;align-items:center;gap:6px;color:#c3bcd6;font-size:14px;font-weight:600;margin-top:6px}
@@ -236,17 +240,17 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
 .like.on svg{fill:currentColor}
 
 /* onda */
-.wave{display:flex;align-items:center;gap:2px;height:44px;padding:18px 24px 0;cursor:pointer}
+.wave{display:flex;align-items:center;gap:2px;height:40px;padding:12px 24px 0;cursor:pointer}
 .wave i{flex:1;background:rgba(255,255,255,.18);border-radius:2px;transition:background .2s}
 .wave i.on{background:var(--accent)}
 
-.seek{padding:16px 24px 0}
+.seek{padding:10px 24px 0}
 .seek .bar{height:4px;background:rgba(255,255,255,.14);border-radius:4px;position:relative;cursor:pointer}
 .seek .bar .fill{height:100%;background:var(--accent);border-radius:4px;width:0}
 .seek .bar .knob{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%);left:0;box-shadow:0 0 8px var(--accent-glow)}
 .seek .times{display:flex;justify-content:space-between;font-size:11.5px;color:#b0a9c4;margin-top:8px;font-variant-numeric:tabular-nums}
 
-.controls{display:flex;align-items:center;justify-content:space-between;padding:14px 30px 0}
+.controls{display:flex;align-items:center;justify-content:space-between;padding:10px 30px 0}
 .controls button{background:none;border:none;color:var(--text);cursor:pointer;display:flex;padding:6px;transition:color .15s}
 .controls button.sm{color:#a79fbf}
 .controls button.sm.on{color:var(--accent)}
@@ -257,12 +261,12 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
   box-shadow:0 8px 26px var(--accent-glow);
 }
 .play-btn:active{transform:scale(.95)}
-.util{display:flex;align-items:center;justify-content:space-between;padding:20px 30px 0;color:#a79fbf}
+.util{display:flex;align-items:center;justify-content:space-between;padding:12px 30px 0;color:#a79fbf}
 .util button{background:none;border:none;color:inherit;cursor:pointer;display:flex;padding:6px}
 .util button.on{color:var(--accent)}
 
 /* panel inferior del reproductor */
-.panel{margin-top:24px;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);padding:6px 0 30px;min-height:180px}
+.panel{margin-top:16px;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);padding:6px 0 30px;min-height:150px}
 .panel-grip{width:38px;height:4px;border-radius:4px;background:#3a3450;margin:8px auto 0}
 .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px 10px}
 .panel-head h3{font-size:15px;font-weight:700}
@@ -295,10 +299,11 @@ svg{display:block}
 
   <!-- ============ INICIO ============ -->
   <section class="screen active" id="s-home">
-    <div class="pad" style="padding-top:12px">
-      <p class="eyebrow">Martes por la mañana</p>
-      <h1 class="hero-greet" style="margin-top:8px">Buenos días, Marvin</h1>
-      <p class="hero-sub">Retoma donde te quedaste</p>
+    <div class="apphead">
+      <h1>Mi Música</h1>
+      <p>Reproduce lo que quieras</p>
+    </div>
+    <div class="pad">
       <div class="quick" id="quickGrid"></div>
     </div>
 
@@ -548,6 +553,18 @@ const artEl = (t, cls='') => {
   const d = document.createElement('div');
   d.className = 'art ' + cls;
   d.style.setProperty('--c1', t.c1); d.style.setProperty('--c2', t.c2);
+  if(t.yt){
+    // Carátula real: miniatura del video de YouTube (con degradado de respaldo detrás)
+    const img = document.createElement('img');
+    img.className = 'art-img'; img.alt = '';
+    const hi = cls.includes('cover');           // carátula grande del reproductor
+    const srcs = hi ? ['maxresdefault','hqdefault','mqdefault'] : ['mqdefault','hqdefault'];
+    let k = 0;
+    const set = () => img.src = 'https://i.ytimg.com/vi/' + t.yt + '/' + srcs[k] + '.jpg';
+    img.onerror = () => { k++; (k < srcs.length) ? set() : img.remove(); };
+    set();
+    d.append(img);
+  }
   return d;
 };
 
@@ -578,9 +595,16 @@ function songRow(t, i, opts={}){
   r.append(d);
   const k = document.createElement('span');
   k.className = 'kebab'; k.innerHTML = ICON.kebab;
+  k.onclick = e => { e.stopPropagation(); addToQueue(i); };
   r.append(k);
   r.onclick = () => { state.idx = i; state.t = 0; play(true); openPlayer(); };
   return r;
+}
+
+function addToQueue(i){
+  if(!state.queue.includes(i)) state.queue.push(i);
+  toast('Añadida a la cola: ' + LIB[i].title);
+  renderPanel();
 }
 
 /* ---------- construir pantallas ---------- */
@@ -764,7 +788,7 @@ function renderPanel(){
       body.innerHTML = '<div class="empty" style="padding:30px"><h3>La cola está vacía</h3><p>Toca una canción para agregarla.</p></div>';
       return;
     }
-    state.queue.forEach(i=>{
+    state.queue.forEach((i,pos)=>{
       const t = LIB[i];
       const r = document.createElement('div'); r.className='queue-row';
       const g = document.createElement('span'); g.className='grip'; g.innerHTML = ICON.grip;
@@ -775,7 +799,9 @@ function renderPanel(){
       m.querySelector('p').textContent = t.artist;
       r.append(m);
       const d = document.createElement('span'); d.className='dur'; d.textContent = fmt(t.dur);
-      const k = document.createElement('span'); k.className='kebab'; k.innerHTML = ICON.kebab;
+      const k = document.createElement('span'); k.className='kebab'; k.innerHTML = ICON.x;
+      k.title = 'Quitar de la cola';
+      k.onclick = e => { e.stopPropagation(); state.queue.splice(pos,1); renderPanel(); };
       r.append(d,k);
       r.onclick = () => { state.idx = i; state.t=0; play(true); };
       body.append(r);
@@ -815,8 +841,14 @@ function renderTrack(){
   $('#likeBtn').classList.toggle('on', state.liked.has(state.idx));
   $('#miniTitle').textContent = t.title;
   $('#miniArtist').textContent = t.artist;
-  $('#miniArt').style.setProperty('--c1',t.c1);
-  $('#miniArt').style.setProperty('--c2',t.c2);
+  const ma = $('#miniArt');
+  ma.style.setProperty('--c1',t.c1); ma.style.setProperty('--c2',t.c2);
+  ma.innerHTML = '';
+  if(t.yt){
+    const im = document.createElement('img'); im.className = 'art-img'; im.alt = '';
+    im.src = 'https://i.ytimg.com/vi/' + t.yt + '/mqdefault.jpg';
+    ma.append(im);
+  }
   renderStage(); renderPanel();
   buildHome();
   if($('#searchInput').value) runSearch($('#searchInput').value);
@@ -973,11 +1005,21 @@ $('#playBtn').onclick = () => play();
 $('#nextBtn').onclick = next;
 $('#prevBtn').onclick = prev;
 $('#likeBtn').onclick = () => {
-  state.liked.has(state.idx) ? state.liked.delete(state.idx) : state.liked.add(state.idx);
-  $('#likeBtn').classList.toggle('on', state.liked.has(state.idx));
+  const on = !state.liked.has(state.idx);
+  on ? state.liked.add(state.idx) : state.liked.delete(state.idx);
+  $('#likeBtn').classList.toggle('on', on);
+  toast(on ? 'Añadida a tus me gusta' : 'Quitada de tus me gusta');
 };
-$('#shuffleBtn').onclick = e => { state.shuffle = !state.shuffle; e.currentTarget.classList.toggle('on', state.shuffle); };
-$('#repeatBtn').onclick = e => { state.repeat = !state.repeat; e.currentTarget.classList.toggle('on', state.repeat); };
+$('#shuffleBtn').onclick = e => {
+  state.shuffle = !state.shuffle;
+  e.currentTarget.classList.toggle('on', state.shuffle);
+  toast(state.shuffle ? 'Reproducción aleatoria activada' : 'Reproducción aleatoria desactivada');
+};
+$('#repeatBtn').onclick = e => {
+  state.repeat = !state.repeat;
+  e.currentTarget.classList.toggle('on', state.repeat);
+  toast(state.repeat ? 'Repetir canción activado' : 'Repetir desactivado');
+};
 $('#switchView').onclick = () => { state.view = state.view === 'queue' ? 'lyrics' : 'queue'; renderStage(); renderPanel(); paint(); };
 $('#seekBar').onclick = e => {
   const r = e.currentTarget.getBoundingClientRect();
