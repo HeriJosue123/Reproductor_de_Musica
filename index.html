@@ -312,10 +312,6 @@ svg{display:block}
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <h1 style="font-size:26px;font-style:italic;font-weight:900;margin:0;letter-spacing:-1px;">OpenTune</h1>
       <div style="flex:1"></div>
-      <button class="icon-btn" style="color:var(--text);background:transparent;border:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
-      <button class="icon-btn" style="color:var(--text);background:transparent;border:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></button>
-      <button class="icon-btn" style="color:var(--text);background:transparent;border:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
-      <button class="icon-btn" style="color:var(--text);background:transparent;border:none;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </div>
     
     <div class="scroll-row" style="padding:0 24px 16px; display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
@@ -944,16 +940,6 @@ function renderTrack(){
   $('#playerBg').style.setProperty('--c2',t.c2);
   $('#playerBg').style.background = `linear-gradient(160deg, ${t.c1}, ${t.c2})`;
   $('#likeBtn').classList.toggle('on', state.liked.has(state.idx));
-  $('#miniTitle').textContent = t.title;
-  $('#miniArtist').textContent = t.artist;
-  const ma = $('#miniArt');
-  ma.style.setProperty('--c1',t.c1); ma.style.setProperty('--c2',t.c2);
-  ma.innerHTML = '';
-  if(t.yt){
-    const im = document.createElement('img'); im.className = 'art-img'; im.alt = '';
-    im.src = 'https://i.ytimg.com/vi/' + t.yt + '/mqdefault.jpg';
-    ma.append(im);
-  }
   renderStage(); renderPanel();
   buildHome();
   if($('#searchInput').value) runSearch($('#searchInput').value);
