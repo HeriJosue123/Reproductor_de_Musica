@@ -938,8 +938,10 @@ function tickReal(){
       if(d && Math.abs(d - t.dur) > 1){ t.dur = d; $('#tTot').textContent = fmt(d); }
     }catch(e){}
   } else {
-    state.t = Math.min(t.dur, state.t + 0.25);
-    if(state.t >= t.dur){ next(); return; }
+    if (t.dur > 0) {
+      state.t = Math.min(t.dur, state.t + 0.25);
+      if(state.t >= t.dur){ next(); return; }
+    }
   }
   paint();
 }
@@ -1079,7 +1081,11 @@ function onYTState(e){
   } else if(e.data === YT.PlayerState.PAUSED){
     setPlaying(false);
   } else if(e.data === YT.PlayerState.ENDED){
-    next();
+    if (state.t < 2) {
+      onYTError();
+    } else {
+      next();
+    }
   }
 }
 function onYTError(){
