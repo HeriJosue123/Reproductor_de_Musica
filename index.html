@@ -628,6 +628,40 @@ function addToQueue(i){
   renderPanel();
 }
 
+/* Canciones semilla para cuando aún no hay historial de escucha.
+   Solo título+artista (sin ID de YouTube fijo): la portada se busca en Apple
+   Music (sin límite de cuota) y el audio se resuelve en vivo con las
+   YOUTUBE_KEYS al reproducir, igual que el resto de la app. Así nunca se
+   queda con una portada rota ni un ID de video que ya no existe. */
+const SEED_SONGS = [
+  {title:'PERRO NEGRO', artist:'Bad Bunny, Feid'},
+  {title:'QLONA', artist:'Karol G, Peso Pluma'},
+  {title:'LADY GAGA', artist:'Peso Pluma, Gabito Ballesteros, Junior H'},
+  {title:'UN PREVIEW', artist:'Bad Bunny'},
+  {title:'LUNA', artist:'Feid, ATL Jacob'},
+  {title:'MI EX TENÍA RAZÓN', artist:'Karol G'},
+  {title:'MONACO', artist:'Bad Bunny'},
+  {title:'PROVENZA', artist:'Karol G'},
+  {title:'LA JUMPA', artist:'Arcangel, Bad Bunny'},
+  {title:'Lala', artist:'Myke Towers'},
+  {title:'CLASSY 101', artist:'Feid, Young Miko'},
+  {title:'TQM', artist:'Fuerza Regida'}
+];
+let _seedCache = null;
+async function getSeedTracks(){
+  if(_seedCache) return _seedCache;
+  _seedCache = await Promise.all(SEED_SONGS.map(async s => {
+    let cover = null;
+    try{
+      const data = await searchAppleMusic(s.artist + ' ' + s.title);
+      const hit = data.items && data.items.find(it => it.thumb);
+      if(hit) cover = hit.thumb;
+    }catch(e){}
+    return mk(s.title, s.artist, 0, null, cover);
+  }));
+  return _seedCache;
+}
+
 /* ---------- construir pantallas ---------- */
 async function buildHome(force = false){
   const q = $('#quickGrid');
@@ -639,21 +673,7 @@ async function buildHome(force = false){
 
   let historyTracks = state.history || [];
   if(historyTracks.length === 0){
-    const fallbacks = [
-      {title: 'PERRO NEGRO', artist: 'Bad Bunny, Feid', yt: 'xl518w3vMng'},
-      {title: 'QLONA', artist: 'Karol G, Peso Pluma', yt: '35TqB6QnXYI'},
-      {title: 'LADY GAGA', artist: 'Peso Pluma, Gabito Ballesteros, Junior H', yt: '3tXw-xQ17yA'},
-      {title: 'UN PREVIEW', artist: 'Bad Bunny', yt: '62Wp9TntVjM'},
-      {title: 'LUNA', artist: 'Feid, ATL Jacob', yt: 'yO76KzN7iR4'},
-      {title: 'MI EX TENÍA RAZÓN', artist: 'Karol G', yt: 'zV2M7Qo1uYk'},
-      {title: 'MONACO', artist: 'Bad Bunny', yt: 'G2eL-x4xHws'},
-      {title: 'PROVENZA', artist: 'Karol G', yt: 'ca48oMV59LU'},
-      {title: 'LA JUMPA', artist: 'Arcangel, Bad Bunny', yt: 'VbA7OQ72KzQ'},
-      {title: 'Lala', artist: 'Myke Towers', yt: 'f72i6l_PqZk'},
-      {title: 'CLASSY 101', artist: 'Feid, Young Miko', yt: 'uJvY79iFmJ0'},
-      {title: 'TQM', artist: 'Fuerza Regida', yt: 'fC9p-k1u6cI'}
-    ];
-    historyTracks = fallbacks.map(it => mk(it.title, it.artist, 0, it.yt));
+    historyTracks = await getSeedTracks();
   }
 
   q.innerHTML = '';
@@ -722,12 +742,7 @@ async function buildHome(force = false){
        });
     }
   } else if (LIB.length === 0) {
-    const fallbacks = [
-      {title: 'PERRO NEGRO', artist: 'Bad Bunny, Feid', yt: 'xl518w3vMng'},
-      {title: 'QLONA', artist: 'Karol G, Peso Pluma', yt: '35TqB6QnXYI'},
-      {title: 'LADY GAGA', artist: 'Peso Pluma, Gabito Ballesteros, Junior H', yt: '3tXw-xQ17yA'}
-    ];
-    LIB = fallbacks.map(it => mk(it.title, it.artist, 0, it.yt));
+    LIB = (await getSeedTracks()).slice(0, 6);
     hl.innerHTML = '';
     LIB.slice(0, 5).forEach((t, i) => hl.append(songRow(t, i)));
     loadTrack(0, false);
