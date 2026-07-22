@@ -84,6 +84,9 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
 .quick .art{width:56px;height:56px;border-radius:0}
 .shelf{display:flex;gap:14px;overflow-x:auto;padding:2px 20px 4px;scrollbar-width:none}
 .shelf::-webkit-scrollbar{display:none}
+.quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 24px 24px; }
+.quick-grid > div { display:flex; align-items:center; background:var(--surface-2); border-radius:4px; overflow:hidden; gap:8px; padding-right:12px; cursor:pointer; }
+.quick-grid > div .art { width:56px; height:56px; border-radius:0; flex-shrink:0; }
 .card{width:136px;flex:none;cursor:pointer}
 .card .art{width:136px;height:136px;box-shadow:0 8px 22px rgba(0,0,0,.5)}
 .card h3{font-size:13.5px;font-weight:700;margin-top:10px;line-height:1.3}
@@ -308,7 +311,7 @@ svg{display:block}
       <button class="chip-btn" style="background:var(--surface-2);color:var(--text);border:none;padding:8px 16px;border-radius:20px;font-weight:600;font-size:14px;">Energía</button>
       <button class="chip-btn" style="background:var(--surface-2);color:var(--text);border:none;padding:8px 16px;border-radius:20px;font-weight:600;font-size:14px;">Fiesta</button>
     </div>
-<div class="pad section-head" style="margin-top:16px;"><h2>Sigue escuchando</h2></div><div class="scroll-row" id="quickGrid" style="display:flex; gap:16px; overflow-x:auto; padding:0 24px 24px; -webkit-overflow-scrolling:touch; scrollbar-width:none;"></div>
+<div class="pad section-head" style="margin-top:16px;"><h2>Sigue escuchando</h2></div><div class="quick-grid" id="quickGrid"></div>
 
     <div class="pad section-head"><h2>Escuchado recientemente</h2><a href="#" data-goto="library">Ver todo</a></div>
     <div class="shelf" id="recentShelf"></div>
@@ -615,19 +618,11 @@ async function buildHome(){
   q.innerHTML = '';
   LIB.slice(0,6).forEach((t,i)=>{
     const c = document.createElement('div');
-    c.style.cssText = 'flex:0 0 160px; display:flex; flex-direction:column; gap:8px; position:relative; cursor:pointer;';
     const a = artEl(t);
-    a.style.width = '160px'; a.style.height = '160px'; a.style.borderRadius = '20px';
-    c.append(a);
-    const playO = document.createElement('div');
-    playO.style.cssText = 'position:absolute; top:80px; left:50%; transform:translate(-50%,-50%); width:48px; height:48px; border-radius:24px; background:rgba(0,0,0,0.6); color:var(--accent); display:grid; place-items:center;';
-    playO.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>`;
-    c.append(playO);
-    const m = document.createElement('div');
-    m.innerHTML = '<h4 style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;"></h4><p style="font-size:13px;color:var(--accent-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;"></p>';
-    m.querySelector('h4').textContent = t.title;
-    m.querySelector('p').textContent = t.artist;
-    c.append(m);
+    const text = document.createElement('span');
+    text.style.cssText = 'font-size:13px; font-weight:700; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2;';
+    text.textContent = t.title;
+    c.append(a, text);
     c.onclick = () => { state.idx = i; state.t = 0; play(true); openPlayer(); };
     q.append(c);
   });
