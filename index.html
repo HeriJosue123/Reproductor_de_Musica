@@ -1235,8 +1235,23 @@ function prev(){
   if(state.t > 4){ seekTo(0); return; }
   loadTrack((state.idx-1+LIB.length)%LIB.length, true);
 }
-const openPlayer = () => $('#player').classList.add('open');
-const closePlayer = () => $('#player').classList.remove('open');
+/* El reproductor abierto cuenta como "un paso" en el historial del navegador.
+   Así, el botón/gesto de atrás (del navegador o del celular) cierra primero
+   el reproductor, en vez de salirse de toda la app de un solo golpe. */
+function openPlayer(){
+  $('#player').classList.add('open');
+  history.pushState({ opentunePlayer:true }, '');
+}
+function closePlayer(){
+  if(history.state && history.state.opentunePlayer){
+    history.back();   // dispara popstate, que abajo quita la clase 'open'
+  } else {
+    $('#player').classList.remove('open');
+  }
+}
+window.addEventListener('popstate', e => {
+  if(!(e.state && e.state.opentunePlayer)) $('#player').classList.remove('open');
+});
 
 /* ---------- Aviso emergente ---------- */
 function toast(msg){
