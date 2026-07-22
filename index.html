@@ -200,26 +200,60 @@ nav button.active {
 
 /* ---------- Reproductor a pantalla completa ---------- */
 .player{
-  position:absolute;inset:0;z-index:60;background:var(--bg);
+  position:absolute;inset:0;z-index:150;background:#000;
   display:flex;flex-direction:column;
   transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.85,.3,1);
   overflow:hidden;
 }
 .player.open{transform:none}
-.player-bg{
-  position:absolute;inset:0;opacity:.5;filter:blur(70px) saturate(1.4);transform:scale(1.3);
-  background:linear-gradient(160deg,var(--c1),var(--c2));transition:background .5s;
-}
-.player-inner{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}
+.player-inner{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none;padding-bottom:24px}
 .player-inner::-webkit-scrollbar{display:none}
-.player-top{display:flex;align-items:center;justify-content:space-between;padding:max(env(safe-area-inset-top),22px) 20px 0}
+
+.player-top{display:flex;flex-direction:column;align-items:center;padding:max(env(safe-area-inset-top),32px) 20px 16px}
+.player-top .label{font-size:14px;font-weight:700;letter-spacing:0;color:#fff;margin-bottom:4px}
+.player-top .sub{font-size:13px;font-weight:500;color:rgba(255,255,255,0.6)}
+.player-top-down{position:absolute;left:20px;top:max(env(safe-area-inset-top),32px);color:#fff;background:none;border:none;padding:4px;cursor:pointer}
+
+.stage{padding:0 24px 24px;display:flex;justify-content:center;margin-top:auto}
+.cover-square{width:100%;max-width:380px;aspect-ratio:1;border-radius:18px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+
+.track-info{display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:12px}
+.track-info .txt{flex:1;min-width:0}
+.track-info h2{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-info .artist{font-size:15px;font-weight:500;color:rgba(255,255,255,0.6);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-actions{display:flex;gap:8px}
+.track-actions button{width:42px;height:42px;border-radius:21px;background:#1a1a1a;border:none;color:#fff;display:grid;place-items:center;cursor:pointer}
+.track-actions button svg{width:20px;height:20px}
+.track-actions button.like.on{color:#fcd4d4}
+.track-actions button.like.on svg{fill:currentColor}
+
+.seek{padding:24px 24px 12px}
+.seek .bar{height:6px;background:rgba(255,255,255,.14);border-radius:4px;position:relative;cursor:pointer}
+.seek .bar .fill{height:100%;background:#fff;border-radius:4px;width:0}
+.seek .bar .knob{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);left:0}
+.seek .times{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;font-weight:500;font-variant-numeric:tabular-nums}
+
+.controls{display:flex;align-items:center;justify-content:space-between;padding:0 24px 24px}
+.controls button{background:none;border:none;color:#fff;cursor:pointer;display:flex;padding:6px;transition:transform 0.1s}
+.controls button:active{transform:scale(0.9)}
+.controls button.sm{color:rgba(255,255,255,0.5)}
+.play-btn{
+  width:96px;height:84px;border-radius:36px;
+  background:#fcd4d4;
+  display:grid;place-items:center;color:#000!important;
+}
+.play-btn svg{width:32px;height:32px;fill:currentColor}
+
+.util-bar{display:flex;align-items:center;justify-content:space-between;padding:0 24px 32px;gap:12px;margin-top:auto}
+.util-btn{flex:1;height:48px;border-radius:24px;background:#1a1a1a;border:none;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer}
+.util-btn.circle{flex:0 0 48px;padding:0}
 
 /* ---------- Aviso emergente (toast) ---------- */
 #toast{
   position:absolute;left:50%;bottom:calc(var(--nav-h) + 82px);
   transform:translateX(-50%) translateY(12px);
   background:rgba(20,16,32,.96);border:1px solid var(--line);color:var(--text);
-  font-size:12.5px;font-weight:600;padding:10px 16px;border-radius:11px;z-index:80;
+  font-size:12.5px;font-weight:600;padding:10px 16px;border-radius:11px;z-index:200;
   opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;max-width:82%;text-align:center;
   box-shadow:0 10px 30px rgba(0,0,0,.5);
 }
@@ -227,52 +261,6 @@ nav button.active {
 
 /* Reproductor de YouTube oculto (solo audio) */
 #ytHost{position:absolute;width:1px;height:1px;left:-9999px;top:0;opacity:0;pointer-events:none}
-.player-top .label{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
-
-.stage{padding:14px 28px 0;display:flex;justify-content:center}
-.cover-square{width:min(340px,44vh,80vw);aspect-ratio:1;height:auto;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-.cover-round-wrap{position:relative;width:250px;height:250px}
-.cover-round-wrap .art{position:absolute;inset:14px;border-radius:50%;box-shadow:0 20px 50px rgba(0,0,0,.6)}
-.ring{position:absolute;inset:0;transform:rotate(-90deg)}
-.ring circle{fill:none;stroke-width:3}
-.ring .track{stroke:rgba(255,255,255,.12)}
-.ring .prog{stroke:var(--accent);stroke-linecap:round;filter:drop-shadow(0 0 6px var(--accent-glow));transition:stroke-dashoffset .25s linear}
-.ring .knob{fill:var(--accent);filter:drop-shadow(0 0 6px var(--accent-glow))}
-
-.track-info{display:flex;align-items:flex-start;gap:14px;padding:16px 24px 0}
-.track-info .txt{flex:1;min-width:0}
-.track-info h2{font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
-.track-info .artist{display:flex;align-items:center;gap:6px;color:#c3bcd6;font-size:14px;font-weight:600;margin-top:6px}
-.verified{color:var(--accent);display:flex}
-.like{background:none;border:none;color:#c3bcd6;cursor:pointer;padding:4px;display:flex}
-.like.on{color:var(--accent)}
-.like.on svg{fill:currentColor}
-
-/* onda */
-.wave{display:flex;align-items:center;gap:2px;height:40px;padding:12px 24px 0;cursor:pointer}
-.wave i{flex:1;background:rgba(255,255,255,.18);border-radius:2px;transition:background .2s}
-.wave i.on{background:var(--accent)}
-
-.seek{padding:10px 24px 0}
-.seek .bar{height:4px;background:rgba(255,255,255,.14);border-radius:4px;position:relative;cursor:pointer}
-.seek .bar .fill{height:100%;background:var(--accent);border-radius:4px;width:0}
-.seek .bar .knob{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%);left:0;box-shadow:0 0 8px var(--accent-glow)}
-.seek .times{display:flex;justify-content:space-between;font-size:11.5px;color:#b0a9c4;margin-top:8px;font-variant-numeric:tabular-nums}
-
-.controls{display:flex;align-items:center;justify-content:space-between;padding:10px 30px 0}
-.controls button{background:none;border:none;color:var(--text);cursor:pointer;display:flex;padding:6px;transition:color .15s}
-.controls button.sm{color:#a79fbf}
-.controls button.sm.on{color:var(--accent)}
-.play-btn{
-  width:64px;height:64px;border-radius:50%;
-  background:linear-gradient(150deg,var(--accent),var(--accent-2));
-  display:grid;place-items:center;color:#fff;
-  box-shadow:0 8px 26px var(--accent-glow);
-}
-.play-btn:active{transform:scale(.95)}
-.util{display:flex;align-items:center;justify-content:space-between;padding:12px 30px 0;color:#a79fbf}
-.util button{background:none;border:none;color:inherit;cursor:pointer;display:flex;padding:6px}
-.util button.on{color:var(--accent)}
 
 /* panel inferior del reproductor */
 .panel{margin-top:16px;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);padding:6px 0 30px;min-height:150px}
@@ -429,16 +417,13 @@ svg{display:block}
 
   <!-- ============ REPRODUCTOR COMPLETO ============ -->
   <div class="player" id="player">
-    <div class="player-bg" id="playerBg"></div>
     <div class="player-inner">
+      <button class="player-top-down" id="closePlayer">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
       <div class="player-top">
-        <button class="icon-btn" id="closePlayer" style="color:var(--text)">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
         <span class="label">Reproduciendo ahora</span>
-        <button class="icon-btn" id="switchView" style="color:var(--text)" title="Cambiar vista">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
-        </button>
+        <span class="sub" id="pTopArtist">—</span>
       </div>
 
       <div class="stage" id="stage"></div>
@@ -446,17 +431,14 @@ svg{display:block}
       <div class="track-info">
         <div class="txt">
           <h2 id="pTitle">—</h2>
-          <div class="artist">
-            <span id="pArtist">—</span>
-            <span class="verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.6 14.6 4l3.5-.3.9 3.4 3 1.9-1.5 3.2 1.5 3.2-3 1.9-.9 3.4-3.5-.3L12 22.4 9.4 20l-3.5.3-.9-3.4-3-1.9L3.5 12 2 8.8l3-1.9.9-3.4 3.5.3z"/><path d="m8.5 12 2.4 2.4 4.6-4.8" stroke="#08070c" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          </div>
+          <div class="artist" id="pArtist">—</div>
         </div>
-        <button class="like" id="likeBtn">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20.5 4.3 13a4.6 4.6 0 0 1 6.5-6.5l1.2 1.2 1.2-1.2A4.6 4.6 0 1 1 19.7 13z"/></svg>
-        </button>
+        <div class="track-actions">
+          <button title="Compartir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg></button>
+          <button class="like" id="likeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+          <button title="Opciones"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+        </div>
       </div>
-
-      <div class="wave" id="wave" style="display:none"></div>
 
       <div class="seek">
         <div class="bar" id="seekBar"><div class="fill" id="seekFill"></div><div class="knob" id="seekKnob"></div></div>
@@ -465,22 +447,22 @@ svg{display:block}
 
       <div class="controls">
         <button class="sm" id="shuffleBtn" title="Aleatorio">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
         </button>
-        <button id="prevBtn"><svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14l-11-7z"/><rect x="4.6" y="5" width="2.4" height="14" rx="1"/></svg></button>
+        <button id="prevBtn"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14l-11-7z"/><rect x="4" y="5" width="3" height="14" rx="1"/></svg></button>
         <button class="play-btn" id="playBtn"></button>
-        <button id="nextBtn"><svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5l11 7-11 7z"/><rect x="17" y="5" width="2.4" height="14" rx="1"/></svg></button>
+        <button id="nextBtn"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5l11 7-11 7z"/><rect x="17" y="5" width="3" height="14" rx="1"/></svg></button>
         <button class="sm" id="repeatBtn" title="Repetir">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 12V10a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 12v2a4 4 0 0 1-4 4H3"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 12V10a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 12v2a4 4 0 0 1-4 4H3"/></svg>
         </button>
       </div>
 
-      <div class="util">
-        <button title="Volumen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
-        <button id="castBtn" title="Transmitir" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8"/></svg></button>
-        <button title="Ecualizador"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="10" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="18" cy="18" r="2" fill="currentColor" stroke="none"/></svg></button>
+      <div class="util-bar">
+        <button class="util-btn" onclick="state.view='queue'; renderPanel();"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Cola</button>
+        <button class="util-btn circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+        <button class="util-btn" onclick="state.view='lyrics'; renderPanel();"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="12" x2="10" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>Letras</button>
       </div>
-
+    
       <div class="panel" id="panel">
         <div class="panel-grip"></div>
         <div class="panel-head">
@@ -489,10 +471,8 @@ svg{display:block}
         </div>
         <div id="panelBody"></div>
       </div>
-    </div>
-  </div>
-
-</div>
+    </div> <!-- closes .player-inner -->
+  </div> <!-- closes .player -->
 
 <script>
 /* ============================================================
@@ -843,24 +823,8 @@ function buildProfile(){
 function renderStage(){
   const t = cur(), st = $('#stage');
   st.innerHTML = '';
-  if(state.view === 'queue'){
-    const a = artEl(t,'cover-square'); st.append(a);
-    $('#wave').style.display='none';
-    $('#castBtn').style.display='none';
-  } else {
-    const w = document.createElement('div'); w.className='cover-round-wrap';
-    const R = 121, C = 2*Math.PI*R;
-    w.innerHTML = `<svg class="ring" viewBox="0 0 250 250" width="250" height="250">
-        <circle class="track" cx="125" cy="125" r="${R}"/>
-        <circle class="prog" cx="125" cy="125" r="${R}" stroke-dasharray="${C}" stroke-dashoffset="${C}"/>
-        <circle class="knob" cx="125" cy="4" r="5" id="ringKnob"/>
-      </svg>`;
-    w.append(artEl(t));
-    st.append(w);
-    $('#wave').style.display='flex';
-    $('#castBtn').style.display='';
-  }
-  buildWave();
+  const a = artEl(t,'cover-square');
+  st.append(a);
 }
 
 function buildWave(){
@@ -935,10 +899,8 @@ function renderTrack(){
   const t = cur();
   $('#pTitle').textContent = t.title;
   $('#pArtist').textContent = t.artist;
+  $('#pTopArtist').textContent = t.artist;
   $('#tTot').textContent = fmt(t.dur);
-  $('#playerBg').style.setProperty('--c1',t.c1);
-  $('#playerBg').style.setProperty('--c2',t.c2);
-  $('#playerBg').style.background = `linear-gradient(160deg, ${t.c1}, ${t.c2})`;
   $('#likeBtn').classList.toggle('on', state.liked.has(state.idx));
   renderStage(); renderPanel();
   buildHome();
