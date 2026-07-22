@@ -617,8 +617,7 @@ async function buildHome(){
   if(LIB.length === 0){
     q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Cargando recomendaciones...</p></div>';
     try {
-      const r = await fetch('/api/home?v=2');
-      const data = await r.json();
+      const data = await searchYouTube('exitos latinos oficiales audio');
       if(data.items && data.items.length > 0) {
         LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt));
       } else {
