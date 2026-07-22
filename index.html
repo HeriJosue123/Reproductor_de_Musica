@@ -970,7 +970,12 @@ async function loadTrack(i, autoplay=true){
   
   if (!t.yt) {
     toast('Cargando audio...');
-    const ytData = await searchYouTube(t.artist + ' ' + t.title);
+    const ytData = await searchYouTube(t.artist + ' ' + t.title + ' audio');
+    if (ytData.error) {
+      toast('Error: ' + ytData.error);
+      setTimeout(next, 2000);
+      return;
+    }
     if (ytData.items && ytData.items.length > 0) {
       t.ytList = ytData.items.map(x => x.yt);
       t.ytIndex = 0;
@@ -1076,15 +1081,17 @@ function onYTState(e){
 }
 function onYTError(){
   const t = cur();
-  if (t.ytList && t.ytIndex !== undefined && t.ytIndex < t.ytList.length - 1) {
+  if (t.ytList && t.ytIndex !== undefined && t.ytIndex < Math.min(t.ytList.length - 1, 3)) {
     t.ytIndex++;
     t.yt = t.ytList[t.ytIndex];
     if(pendingId) pendingId = t.yt;
-    if(yt && ytReady) loadYT(t.yt, true);
+    setTimeout(() => {
+      if(yt && ytReady) loadYT(t.yt, true);
+    }, 600);
     return;
   }
   toast('No se pudo reproducir «' + t.title + '», paso a la siguiente.');
-  setTimeout(next, 1400);
+  setTimeout(next, 1500);
 }
 
 /* ---------- navegación ---------- */
