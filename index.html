@@ -175,10 +175,10 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
 
 /* ---------- Nav inferior ---------- */
 .nav{
-  position:fixed; bottom:24px; left:50%; transform:translateX(-50%); width:calc(100% - 48px); max-width:400px;
-  background:var(--surface); border-radius:32px; display:flex; justify-content:space-around;
-  padding:12px 0; z-index:100;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%); width:calc(100% - 96px); max-width:320px;
+  background:#141414; border-radius:32px; display:flex; justify-content:space-around; align-items:center;
+  padding:8px 0; z-index:100;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 nav button {
   background:transparent; border:none; color:var(--muted); padding:8px 16px; border-radius:16px; transition:0.2s;
@@ -187,18 +187,11 @@ nav button.active {
   color:var(--text); background:var(--surface-2);
 }
 .nav button{
-  background:none;border:none;color:var(--muted);font:inherit;font-size:10.5px;font-weight:700;
-  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:56px;
+  background:none;border:none;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;width:56px;height:40px;
   transition:color .15s;
 }
-.nav button.active{color:var(--accent)}
-.nav .fab{
-  width:52px;height:52px;border-radius:50%;margin-top:-14px;
-  background:linear-gradient(150deg,var(--accent),var(--accent-2));
-  color:#fff;display:grid;place-items:center;gap:0;
-  box-shadow:0 6px 20px var(--accent-glow);
-}
-.nav .fab.active{color:#fff}
+.nav button.active{color:#fff}
 .home-ind{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:4px;background:rgba(255,255,255,.28);z-index:40;pointer-events:none}
 
 /* ---------- Reproductor a pantalla completa ---------- */
@@ -404,23 +397,16 @@ svg{display:block}
   <!-- ============ NAV ============ -->
   <nav class="nav" id="nav">
     <button data-tab="home" class="active">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
-      Inicio
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
     </button>
     <button data-tab="search">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      Buscar
-    </button>
-    <button class="fab" id="fabBtn" title="Abrir reproductor">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="10" width="2.6" height="4" rx="1.3"/><rect x="6.4" y="7" width="2.6" height="10" rx="1.3"/><rect x="10.7" y="3" width="2.6" height="18" rx="1.3"/><rect x="15" y="7" width="2.6" height="10" rx="1.3"/><rect x="19.4" y="10" width="2.6" height="4" rx="1.3"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     </button>
     <button data-tab="library">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8v8M12 6v12M16 9v6"/></svg>
-      Biblioteca
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M8 3v18"/><path d="M16 3v18"/><rect x="2" y="3" width="20" height="18" rx="2"/></svg>
     </button>
     <button data-tab="profile">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
-      Perfil
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
     </button>
   </nav>
 
@@ -1111,7 +1097,6 @@ function go(tab){
 
 /* ---------- eventos ---------- */
 $$('#nav button[data-tab]').forEach(b => b.onclick = () => go(b.dataset.tab));
-$('#fabBtn').onclick = openPlayer;
 $('#closePlayer').onclick = closePlayer;
 $('#miniPlayer').onclick = (e) => {
   if(e.target.closest('#mPlay')){ e.stopPropagation(); play(); return; }
