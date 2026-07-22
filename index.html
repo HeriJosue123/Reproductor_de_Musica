@@ -354,34 +354,17 @@ svg{display:block}
 
   <!-- ============ BIBLIOTECA ============ -->
   <section class="screen" id="s-library">
-    <div class="pad" style="padding-top:12px">
-      <p class="eyebrow">Guardado por ti</p>
-      <h1 class="title">Biblioteca</h1>
-    </div>
-    <div class="tabs">
-      <button class="tab active">Playlists</button>
-      <button class="tab">Canciones</button>
-      <button class="tab">Artistas</button>
-      <button class="tab">Descargas</button>
-    </div>
-    <div style="height:12px"></div>
-    <div id="libraryList"></div>
-  </section>
-
-  <!-- ============ PERFIL ============ -->
-  <section class="screen" id="s-profile">
-    <div class="pad" style="padding-top:12px">
-      <p class="eyebrow">Cuenta</p>
-      <h1 class="title">Perfil</h1>
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:26px">
-        <div class="art round" style="width:64px;height:64px;--c1:#a855f7;--c2:#4c1d95"></div>
-        <div>
-          <h3 style="font-size:17px;font-weight:700">Marvin</h3>
-          <p style="font-size:13px;color:var(--muted);margin-top:3px">128 canciones · 9 playlists</p>
-        </div>
+    <div class="pad" style="padding-top:12px; display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <p class="eyebrow">Guardado por ti</p>
+        <h1 class="title" style="margin-bottom:0">Biblioteca</h1>
       </div>
+      <button class="icon-btn" id="addFolderBtn" title="Crear carpeta" style="color:var(--text)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </div>
-    <div id="profileList"></div>
+    <div style="height:14px"></div>
+    <div id="libraryList"></div>
   </section>
 
   <!-- ============ MINI PLAYER ============ -->
@@ -410,10 +393,6 @@ svg{display:block}
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M3 4v16M9 4v16M15 5l4 15M3 4h6M3 20h6"/></svg>
       Biblioteca
     </button>
-    <button data-tab="profile">
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
-      Perfil
-    </button>
   </nav>
 
   <div class="home-ind"></div>
@@ -437,9 +416,7 @@ svg{display:block}
           <div class="artist" id="pArtist">—</div>
         </div>
         <div class="track-actions">
-          <button title="Compartir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg></button>
           <button class="like" id="likeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
-          <button title="Opciones"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
         </div>
       </div>
 
@@ -485,16 +462,10 @@ const mk = (title, artist, dur, yt, cover = null) => {
 /* Canciones recomendadas (se cargan dinámicamente) */
 let LIB = [];
 
-const PLAYLISTS = [
-  { name:'Nu metal esencial', n:42 }, { name:'Rap cristiano', n:38 },
-  { name:'Para manejar', n:64 }, { name:'Concentración', n:27 },
-  { name:'Fin de semana', n:51 }, { name:'Descubrimientos', n:30 }
-];
-
 /* ---------- estado ---------- */
 const state = {
   tab:'home', idx:0, playing:false, t:0,
-  liked:new Set(), shuffle:false, repeat:false,
+  shuffle:false, repeat:false,
   view:'queue',          // 'queue' | 'lyrics'
   queue: [],
   recents: [],
@@ -548,9 +519,41 @@ async function searchYouTube(q) {
   return { error: 'Todas las llaves han fallado.' };
 }
 
+/* Quita acentos para que "corazon" encuentre "corazón" y viceversa */
+const normalize = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+/* Palabras que indican una VERSIÓN concreta de la canción. Si el usuario
+   las pide, esa versión sube al top; si no las pide, se prioriza el
+   original y las versiones raras/no pedidas bajan. */
+const VERSION_WORDS = ['remix','acustico','en vivo','live','cover','instrumental','version','sped up','slowed','extended','radio edit','karaoke','mix'];
+
+function rankByRelevance(query, items){
+  const qNorm = normalize(query);
+  const qTokens = qNorm.split(/\s+/).filter(Boolean);
+  const scored = items.map(it => {
+    const titleNorm = normalize(it.title);
+    const artistNorm = normalize(it.artist);
+    let score = 0;
+    qTokens.forEach(tok => {
+      if (titleNorm.includes(tok)) score += 3;
+      else if (artistNorm.includes(tok)) score += 1;
+    });
+    if (titleNorm.includes(qNorm)) score += 6;
+    VERSION_WORDS.forEach(vw => {
+      const wants = qNorm.includes(vw);
+      const has = titleNorm.includes(vw);
+      if (wants && has) score += 8;        // pidió esa versión y la encontró
+      else if (wants && !has) score -= 4;  // pidió esa versión, esta no lo es
+      else if (!wants && has) score -= 2;  // no la pidió, es una versión rara
+    });
+    return { it, score };
+  });
+  return scored.filter(s => s.score > 0).sort((a,b) => b.score - a.score).map(s => s.it);
+}
+
 async function searchAppleMusic(q) {
   try {
-    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=15`);
+    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=25`);
     const data = await r.json();
     const items = (data.results || []).map(it => ({
       title: it.trackName,
@@ -558,7 +561,7 @@ async function searchAppleMusic(q) {
       thumb: it.artworkUrl100 ? it.artworkUrl100.replace('100x100bb', '600x600bb') : '',
       yt: null // se obtendrá bajo demanda
     }));
-    return { items };
+    return { items: rankByRelevance(q, items) };
   } catch(e) {
     return { error: 'Error al conectar con Apple Music.' };
   }
@@ -883,45 +886,67 @@ function playExternal(t){
   loadTrack(i, true); openPlayer();
 }
 
+/* ---------- Biblioteca: "Me gusta" + carpetas (local por ahora, luego irá a la BD) ---------- */
+try { state.likes = JSON.parse(localStorage.getItem('openTuneLikes')) || []; } catch(e) { state.likes = []; }
+try { state.folders = JSON.parse(localStorage.getItem('openTuneFolders')) || []; } catch(e) { state.folders = []; }
+
+const likeKey = t => (t.title || '') + '|' + (t.artist || '');
+const isLiked = t => state.likes.some(x => likeKey(x) === likeKey(t));
+function saveLikes(){ try { localStorage.setItem('openTuneLikes', JSON.stringify(state.likes)); } catch(e) {} }
+function saveFolders(){ try { localStorage.setItem('openTuneFolders', JSON.stringify(state.folders)); } catch(e) {} }
+
+function toggleLike(t){
+  const on = !isLiked(t);
+  if(on) state.likes.unshift({ title:t.title, artist:t.artist, yt:t.yt||null, cover:t.cover||null, c1:t.c1, c2:t.c2 });
+  else state.likes = state.likes.filter(x => likeKey(x) !== likeKey(t));
+  saveLikes();
+  buildLibrary();
+  return on;
+}
+
 function buildLibrary(){
   const el = $('#libraryList'); el.innerHTML='';
-  PLAYLISTS.forEach((p,i)=>{
-    const t = LIB[i];
+
+  // "Me gusta" — siempre visible, se llena solo con lo que el usuario marca con el corazón
+  const likeRow = document.createElement('div'); likeRow.className='row';
+  const likeIcon = document.createElement('div');
+  likeIcon.className='art'; likeIcon.style.cssText='width:52px;height:52px;background:linear-gradient(150deg,var(--accent),#0d5c2e);display:flex;align-items:center;justify-content:center;flex:none';
+  likeIcon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 20.5 4.3 13a4.6 4.6 0 0 1 6.5-6.5l1.2 1.2 1.2-1.2A4.6 4.6 0 1 1 19.7 13z"/></svg>';
+  likeRow.append(likeIcon);
+  const likeMeta = document.createElement('div'); likeMeta.className='meta';
+  likeMeta.innerHTML = '<h4>Me gusta</h4><p></p>';
+  likeMeta.querySelector('p').textContent = state.likes.length + (state.likes.length === 1 ? ' canción' : ' canciones');
+  likeRow.append(likeMeta);
+  likeRow.onclick = () => showLikedSongs();
+  el.append(likeRow);
+
+  // Carpetas creadas manualmente (vacías hasta que conectemos la base de datos)
+  state.folders.forEach((f, i) => {
     const r = document.createElement('div'); r.className='row';
-    const a = artEl(t); a.style.width='52px'; a.style.height='52px';
-    r.append(a);
+    const icon = document.createElement('div');
+    icon.className='art'; icon.style.cssText='width:52px;height:52px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex:none';
+    icon.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+    r.append(icon);
     const m = document.createElement('div'); m.className='meta';
-    m.innerHTML = '<h4></h4><p></p>';
-    m.querySelector('h4').textContent = p.name;
-    m.querySelector('p').textContent = `Playlist · ${p.n} canciones`;
+    m.innerHTML = '<h4></h4><p>Carpeta vacía</p>';
+    m.querySelector('h4').textContent = f.name;
     r.append(m);
-    const c = document.createElement('span'); c.className='kebab'; c.innerHTML = ICON.chev;
-    r.append(c);
+    r.onclick = () => toast('Esta carpeta aún no tiene canciones.');
     el.append(r);
   });
 }
 
-function buildProfile(){
-  const items = [
-    ['Calidad de audio','Alta · solo con Wi-Fi'],
-    ['Descargas','12 canciones · 84 MB'],
-    ['Reproducción','Silencio entre pistas: 2 s'],
-    ['Historial','Ver y borrar'],
-    ['Conexión con YouTube','Conectado · reproducción por IFrame API'],
-    ['Acerca de','Versión 0.2 — audio real de prueba']
-  ];
-  const el = $('#profileList'); el.innerHTML='';
-  items.forEach(([a,b])=>{
-    const r = document.createElement('div'); r.className='row';
-    const m = document.createElement('div'); m.className='meta';
-    m.innerHTML = '<h4></h4><p></p>';
-    m.querySelector('h4').textContent = a;
-    m.querySelector('p').textContent = b;
-    r.append(m);
-    const c = document.createElement('span'); c.className='kebab'; c.innerHTML = ICON.chev;
-    r.append(c);
-    el.append(r);
-  });
+function showLikedSongs(){
+  const el = $('#libraryList'); el.innerHTML='';
+  const back = document.createElement('div'); back.className='pad section-head';
+  back.innerHTML = '<h2>Me gusta</h2><a href="#">Volver</a>';
+  back.querySelector('a').onclick = e => { e.preventDefault(); buildLibrary(); };
+  el.append(back);
+  if(!state.likes.length){
+    el.insertAdjacentHTML('beforeend', '<div class="empty" style="padding:30px"><h3>Aún no tienes canciones con me gusta</h3><p>Toca el corazón en el reproductor para guardarlas aquí.</p></div>');
+    return;
+  }
+  state.likes.forEach((t) => el.append(ytRow(t)));
 }
 
 /* ---------- reproductor ---------- */
@@ -955,7 +980,7 @@ function renderTrack(){
   $('#pArtist').textContent = t.artist;
   $('#pTopArtist').textContent = t.artist;
   $('#tTot').textContent = fmt(t.dur);
-  $('#likeBtn').classList.toggle('on', state.liked.has(state.idx));
+  $('#likeBtn').classList.toggle('on', isLiked(t));
   
   $('#mTitle').textContent = t.title;
   $('#mArtist').textContent = t.artist;
@@ -1179,10 +1204,18 @@ $('#playBtn').onclick = () => play();
 $('#nextBtn').onclick = next;
 $('#prevBtn').onclick = prev;
 $('#likeBtn').onclick = () => {
-  const on = !state.liked.has(state.idx);
-  on ? state.liked.add(state.idx) : state.liked.delete(state.idx);
+  const on = toggleLike(cur());
   $('#likeBtn').classList.toggle('on', on);
   toast(on ? 'Añadida a tus me gusta' : 'Quitada de tus me gusta');
+};
+$('#addFolderBtn').onclick = () => {
+  const name = prompt('Nombre de la nueva carpeta');
+  if(name && name.trim()){
+    state.folders.push({ name: name.trim() });
+    saveFolders();
+    buildLibrary();
+    toast('Carpeta creada: ' + name.trim());
+  }
 };
 $('#shuffleBtn').onclick = e => {
   state.shuffle = !state.shuffle;
@@ -1216,7 +1249,7 @@ $('#clearRecents').onclick = e => { e.preventDefault(); state.recents = []; buil
 $$('[data-goto]').forEach(a => a.onclick = e => { e.preventDefault(); go(a.dataset.goto); });
 
 /* ---------- arranque ---------- */
-buildHome(); buildSearchIdle(); buildLibrary(); buildProfile();
+buildHome(); buildSearchIdle(); buildLibrary();
 $('#playBtn').innerHTML = ICON.playBig;
 renderTrack();
 
@@ -1263,6 +1296,40 @@ homeEl.addEventListener('touchend', async e => {
     ptrText.style.opacity = '0';
   }
 });
+
+/* ---------- Deslizar hacia abajo para cerrar el reproductor ---------- */
+(function(){
+  const player = $('#player');
+  const inner = $('.player-inner');
+  let startY = 0, dy = 0, dragging = false;
+  const THRESHOLD = 110;
+
+  player.addEventListener('touchstart', e => {
+    if (inner.scrollTop > 0) { dragging = false; return; }
+    startY = e.touches[0].clientY;
+    dy = 0;
+    dragging = true;
+    player.style.transition = 'none';
+  }, {passive:true});
+
+  player.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    dy = e.touches[0].clientY - startY;
+    if (dy > 0) {
+      player.style.transform = `translateY(${dy}px)`;
+      if (e.cancelable) e.preventDefault();
+    }
+  }, {passive:false});
+
+  player.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    player.style.transition = '';
+    player.style.transform = '';
+    if (dy > THRESHOLD) closePlayer();
+    dy = 0;
+  });
+})();
 </script>
 <!-- API de reproducción de YouTube (motor de audio) -->
 <script src="https://www.youtube.com/iframe_api"></script>
