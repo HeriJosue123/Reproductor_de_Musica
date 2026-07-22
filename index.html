@@ -510,23 +510,8 @@ const mk = (title, artist, dur, yt) => {
   return { title, artist, dur, yt, album: title, c1: g[0], c2: g[1] };
 };
 
-/* Cada canción trae el ID real de su video de YouTube (yt).
-   La reproducción usa la IFrame Player API, así que suena de verdad.
-   La duración es aproximada; se corrige sola con la real al reproducir. */
-const LIB = [
-  mk('Neverita','Bad Bunny',199,'ARWg160eaX4'),
-  mk('Tití Me Preguntó','Bad Bunny',243,'WIMWwK7zp3I'),
-  mk('Moscow Mule','Bad Bunny',246,'p38WgakuYDo'),
-  mk('Me Porto Bonito','Bad Bunny, Chencho Corleone',178,'UzlkVcIJnlU'),
-  mk('Efecto','Bad Bunny',223,'IxM-Repiyng'),
-  mk('Ella Quiere Beber (Remix)','Anuel AA, Romeo Santos',292,'0w3XwPVxcsw'),
-  mk('Dákiti','Bad Bunny, Jhay Cortez',205,'XbOtHdb8X6Q'),
-  mk('LALA','Myke Towers',192,'Spd8DBsi07A'),
-  mk('Where She Goes','Bad Bunny',231,'bef8QLNHubw'),
-  mk('Classy 101','Feid, Young Miko',207,'cD5T1Y4b7wA'),
-  mk('Ojitos Lindos','Bad Bunny, Bomba Estéreo',258,'Uk-1uC_kTGQ'),
-  mk('Volando (Remix)','Mora, Bad Bunny, Sech',240,'P982oehprfY')
-];
+/* Canciones recomendadas (se cargan dinámicamente) */
+let LIB = [];
 
 const PLAYLISTS = [
   { name:'Nu metal esencial', n:42 }, { name:'Rap cristiano', n:38 },
@@ -543,7 +528,7 @@ const state = {
   recents:['Bad Bunny','Feid','Mora','Tití me preguntó','Ojitos lindos'],
   timer:null, loadedId:null
 };
-const cur = () => LIB[state.idx];
+const cur = () => LIB[state.idx] || mk('Buscando éxitos...','Conectando',0,'');
 const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -607,11 +592,33 @@ function addToQueue(i){
 }
 
 /* ---------- construir pantallas ---------- */
-function buildHome(){
+async function buildHome(){
   const hr = new Date().getHours();
   $('#greeting').textContent = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
 
-  const q = $('#quickGrid'); q.innerHTML = '';
+  const q = $('#quickGrid'); 
+  const rs = $('#recentShelf');
+  const ms = $('#mixShelf');
+  const hl = $('#homeList');
+  
+  if(LIB.length === 0){
+    q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Cargando recomendaciones...</p></div>';
+    rs.innerHTML = ''; ms.innerHTML = ''; hl.innerHTML = '';
+    try {
+      const r = await fetch('/api/home');
+      const data = await r.json();
+      if(data.items && data.items.length > 0) {
+        LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt));
+        loadTrack(0, false); // Carga la primera canción sin reproducirla
+        buildSearchIdle(); buildLibrary();
+      }
+    } catch(e) {
+      q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Error al conectar con YouTube</p></div>';
+      return;
+    }
+  }
+
+  q.innerHTML = '';
   LIB.slice(0,4).forEach((t,i)=>{
     const b = document.createElement('button');
     b.append(artEl(t));
@@ -627,15 +634,19 @@ function buildHome(){
     items.forEach((t,i)=>{
       const c = document.createElement('div'); c.className='card';
       c.append(artEl(t));
-      const h = document.createElement('h3'); h.textContent = t.title;
-      const p = document.createElement('p'); p.textContent = sub ? sub(t) : t.artist;
-      c.append(h,p);
-      c.onclick = () => { state.idx = LIB.indexOf(t); state.t=0; play(true); openPlayer(); };
+      const m = document.createElement('div'); m.className='meta';
+      m.innerHTML = '<h4></h4><p></p>';
+      m.querySelector('h4').textContent = t.title;
+      m.querySelector('p').textContent = sub ? sub(t) : t.artist;
+      c.append(m);
+      c.onclick = () => { state.idx = LIB.indexOf(t); state.t = 0; play(true); openPlayer(); };
       el.append(c);
     });
   };
-  shelf($('#recentShelf'), LIB.slice(4,10));
-  shelf($('#mixShelf'), LIB.slice(2,8), t => 'Mezcla · ' + t.artist.split(',')[0]);
+  if(LIB.length >= 10){
+    shelf($('#recentShelf'), LIB.slice(4,10));
+    shelf($('#mixShelf'), LIB.slice(2,8), t => 'Mezcla · ' + t.artist.split(',')[0]);
+  }
 
   const list = $('#homeList'); list.innerHTML = '';
   LIB.slice(0,5).forEach((t)=> list.append(songRow(t, LIB.indexOf(t))));

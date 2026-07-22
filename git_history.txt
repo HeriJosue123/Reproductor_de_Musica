@@ -1,0 +1,607 @@
+commit f86e45864034d0b2420683815af2f2e89e7cdd8d
+Author: josue <heribertojosue123@gmail.com>
+Date:   Tue Jul 21 19:19:50 2026 -0600
+
+    Revertir colores, restaurar FAB y recuperar miniaturas
+
+diff --git a/index.html b/index.html
+index 538412c..bb2377b 100644
+--- a/index.html
++++ b/index.html
+@@ -9,15 +9,15 @@
+ <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+ <style>
+ :root{
+-  --bg:#121212;
+-  --surface:#121212;
+-  --surface-2:#242424;
+-  --line:#2a2a2a;
+-  --text:#ffffff;
+-  --muted:#b3b3b3;
+-  --accent:#1db954;
+-  --accent-2:#1ed760;
+-  --accent-glow:rgba(29,185,84,.25);
++  --bg:#08070c;
++  --surface:#121019;
++  --surface-2:#1b1826;
++  --line:#2a2636;
++  --text:#f4f2f8;
++  --muted:#8e88a3;
++  --accent:#a855f7;
++  --accent-2:#7c3aed;
++  --accent-glow:rgba(168,85,247,.45);
+   --radius:16px;
+   --nav-h:72px;
+ }
+@@ -156,8 +156,8 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
+ .mini{
+   position:absolute;left:8px;right:8px;bottom:calc(var(--nav-h) + 6px);z-index:20;
+   display:flex;align-items:center;gap:11px;padding:8px 12px 8px 8px;
+-  background:#282828;
+-  border-radius:6px;cursor:pointer;
++  background:rgba(32,27,48,.86);backdrop-filter:blur(18px);
++  border:1px solid var(--line);border-radius:14px;cursor:pointer;
+   transform:translateY(140%);transition:transform .3s cubic-bezier(.3,.9,.3,1);
+ }
+ .mini.up{transform:none}
+@@ -175,11 +175,18 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
+   background:rgba(12,10,20,.9);backdrop-filter:blur(20px);border-top:1px solid var(--line);
+ }
+ .nav button{
+-  background:none;border:none;color:var(--muted);font:inherit;font-size:10px;font-weight:700;
+-  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:25%;
++  background:none;border:none;color:var(--muted);font:inherit;font-size:10.5px;font-weight:700;
++  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:56px;
+   transition:color .15s;
+ }
+-.nav button.active{color:var(--text)}
++.nav button.active{color:var(--accent)}
++.nav .fab{
++  width:52px;height:52px;border-radius:50%;margin-top:-14px;
++  background:linear-gradient(150deg,var(--accent),var(--accent-2));
++  color:#fff;display:grid;place-items:center;gap:0;
++  box-shadow:0 6px 20px var(--accent-glow);
++}
++.nav .fab.active{color:#fff}
+ .home-ind{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:4px;background:rgba(255,255,255,.28);z-index:40;pointer-events:none}
+ 
+ /* ---------- Reproductor a pantalla completa ---------- */
+@@ -249,8 +256,9 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
+ .controls button.sm.on{color:var(--accent)}
+ .play-btn{
+   width:64px;height:64px;border-radius:50%;
+-  background:var(--accent);
+-  display:grid;place-items:center;color:#000;
++  background:linear-gradient(150deg,var(--accent),var(--accent-2));
++  display:grid;place-items:center;color:#fff;
++  box-shadow:0 8px 26px var(--accent-glow);
+ }
+ .play-btn:active{transform:scale(.95)}
+ .util{display:flex;align-items:center;justify-content:space-between;padding:12px 30px 0;color:#a79fbf}
+@@ -294,6 +302,9 @@ svg{display:block}
+     <div class="pad" style="padding-top: max(env(safe-area-inset-top), 24px); padding-bottom: 16px;">
+       <h1 class="hero-greet" id="greeting">Buenos días</h1>
+     </div>
++    <div class="pad">
++      <div class="quick" id="quickGrid"></div>
++    </div>
+ 
+     <div class="pad section-head"><h2>Escuchado recientemente</h2><a href="#" data-goto="library">Ver todo</a></div>
+     <div class="shelf" id="recentShelf"></div>
+@@ -392,19 +403,22 @@ svg{display:block}
+   <!-- ============ NAV ============ -->
+   <nav class="nav" id="nav">
+     <button data-tab="home" class="active">
+-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
++      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+       Inicio
+     </button>
+     <button data-tab="search">
+-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
++      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+       Buscar
+     </button>
++    <button class="fab" id="fabBtn" title="Abrir reproductor">
++      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="10" width="2.6" height="4" rx="1.3"/><rect x="6.4" y="7" width="2.6" height="10" rx="1.3"/><rect x="10.7" y="3" width="2.6" height="18" rx="1.3"/><rect x="15" y="7" width="2.6" height="10" rx="1.3"/><rect x="19.4" y="10" width="2.6" height="4" rx="1.3"/></svg>
++    </button>
+     <button data-tab="library">
+-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8v8M12 6v12M16 9v6"/></svg>
+-      Tu biblioteca
++      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8v8M12 6v12M16 9v6"/></svg>
++      Biblioteca
+     </button>
+     <button data-tab="profile">
+-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
++      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+       Perfil
+     </button>
+   </nav>
+@@ -500,16 +514,18 @@ const mk = (title, artist, dur, yt) => {
+    La reproducción usa la IFrame Player API, así que suena de verdad.
+    La duración es aproximada; se corrige sola con la real al reproducir. */
+ const LIB = [
+-  mk('Fade', 'Alan Walker', 260, 'bM7SZ5SBzyY'),
+-  mk('Spectre', 'Alan Walker', 226, 'AOeY-nDp7hI'),
+-  mk('Invincible', 'DEAF KEV', 273, 'J2X5mJ3HDYE'),
+-  mk('Blank', 'Disfigure', 209, 'p7ZsBPK656s'),
+-  mk('My Heart', 'Different Heaven', 267, 'jK2aIUmmdP4'),
+-  mk('Heroes Tonight', 'Janji', 208, '3nQNiWdeH2Q'),
+-  mk('Cradles', 'Sub Urban', 209, 'Hn4sfC2PbhI'),
+-  mk('Fearless', 'Lost Sky', 194, '9rujCfYXhQc'),
+-  mk('Sky High', 'Elektronomia', 238, 'TW9d8vYrVFQ'),
+-  mk('Mortals', 'Warriyo', 228, 'yJg-Y5byMMw')
++  mk('Neverita','Bad Bunny',199,'ARWg160eaX4'),
++  mk('Tití Me Preguntó','Bad Bunny',243,'WIMWwK7zp3I'),
++  mk('Moscow Mule','Bad Bunny',246,'p38WgakuYDo'),
++  mk('Me Porto Bonito','Bad Bunny, Chencho Corleone',178,'UzlkVcIJnlU'),
++  mk('Efecto','Bad Bunny',223,'IxM-Repiyng'),
++  mk('Ella Quiere Beber (Remix)','Anuel AA, Romeo Santos',292,'0w3XwPVxcsw'),
++  mk('Dákiti','Bad Bunny, Jhay Cortez',205,'XbOtHdb8X6Q'),
++  mk('LALA','Myke Towers',192,'Spd8DBsi07A'),
++  mk('Where She Goes','Bad Bunny',231,'bef8QLNHubw'),
++  mk('Classy 101','Feid, Young Miko',207,'cD5T1Y4b7wA'),
++  mk('Ojitos Lindos','Bad Bunny, Bomba Estéreo',258,'Uk-1uC_kTGQ'),
++  mk('Volando (Remix)','Mora, Bad Bunny, Sech',240,'P982oehprfY')
+ ];
+ 
+ const PLAYLISTS = [
+@@ -595,6 +611,17 @@ function buildHome(){
+   const hr = new Date().getHours();
+   $('#greeting').textContent = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
+ 
++  const q = $('#quickGrid'); q.innerHTML = '';
++  LIB.slice(0,4).forEach((t,i)=>{
++    const b = document.createElement('button');
++    b.append(artEl(t));
++    const s = document.createElement('span'); s.textContent = t.title;
++    s.style.cssText = 'padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
++    b.append(s);
++    b.onclick = () => { state.idx = i; state.t = 0; play(true); openPlayer(); };
++    q.append(b);
++  });
++
+   const shelf = (el, items, sub) => {
+     el.innerHTML = '';
+     items.forEach((t,i)=>{
+@@ -607,8 +634,8 @@ function buildHome(){
+       el.append(c);
+     });
+   };
+-  shelf($('#recentShelf'), LIB.slice(0,5));
+-  shelf($('#mixShelf'), LIB.slice(5,10), t => 'Mezcla · ' + t.artist.split(',')[0]);
++  shelf($('#recentShelf'), LIB.slice(4,10));
++  shelf($('#mixShelf'), LIB.slice(2,8), t => 'Mezcla · ' + t.artist.split(',')[0]);
+ 
+   const list = $('#homeList'); list.innerHTML = '';
+   LIB.slice(0,5).forEach((t)=> list.append(songRow(t, LIB.indexOf(t))));
+@@ -1032,6 +1059,7 @@ function go(tab){
+ 
+ /* ---------- eventos ---------- */
+ $$('#nav button[data-tab]').forEach(b => b.onclick = () => go(b.dataset.tab));
++$('#fabBtn').onclick = openPlayer;
+ $('#closePlayer').onclick = closePlayer;
+ $('#mini').onclick = e => { if(!e.target.closest('button')) openPlayer(); };
+ $('#miniPlay').onclick = e => { e.stopPropagation(); play(); };
+
+commit eb57349a86e9a2697e512e6315cbf44586a77245
+Author: josue <heribertojosue123@gmail.com>
+Date:   Tue Jul 21 19:15:52 2026 -0600
+
+    Rediseño estilo Spotify
+
+diff --git a/index.html b/index.html
+index ec37ed5..538412c 100644
+--- a/index.html
++++ b/index.html
+@@ -9,15 +9,15 @@
+ <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+ <style>
+ :root{
+-  --bg:#08070c;
+-  --surface:#121019;
+-  --surface-2:#1b1826;
+-  --line:#2a2636;
+-  --text:#f4f2f8;
+-  --muted:#8e88a3;
+-  --accent:#a855f7;
+-  --accent-2:#7c3aed;
+-  --accent-glow:rgba(168,85,247,.45);
++  --bg:#121212;
++  --surface:#121212;
++  --surface-2:#242424;
++  --line:#2a2a2a;
++  --text:#ffffff;
++  --muted:#b3b3b3;
++  --accent:#1db954;
++  --accent-2:#1ed760;
++  --accent-glow:rgba(29,185,84,.25);
+   --radius:16px;
+   --nav-h:72px;
+ }
+@@ -156,8 +156,8 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
+ .mini{
+   position:absolute;left:8px;right:8px;bottom:calc(var(--nav-h) + 6px);z-index:20;
+   display:flex;align-items:center;gap:11px;padding:8px 12px 8px 8px;
+-  background:rgba(32,27,48,.86);backdrop-filter:blur(18px);
+-  border:1px solid var(--line);border-radius:14px;cursor:pointer;
++  background:#282828;
++  border-radius:6px;cursor:pointer;
+   transform:translateY(140%);transition:transform .3s cubic-bezier(.3,.9,.3,1);
+ }
+ .mini.up{transform:none}
+@@ -175,18 +175,11 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
+   background:rgba(12,10,20,.9);backdrop-filter:blur(20px);border-top:1px solid var(--line);
+ }
+ .nav button{
+-  background:none;border:none;color:var(--muted);font:inherit;font-size:10.5px;font-weight:700;
+-  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:56px;
++  background:none;border:none;color:var(--muted);font:inherit;font-size:10px;font-weight:700;
++  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:25%;
+   transition:color .15s;
+ }
+-.nav button.active{color:var(--accent)}
+-.nav .fab{
+-  width:52px;height:52px;border-radius:50%;margin-top:-14px;
+-  background:linear-gradient(150deg,var(--accent),var(--accent-2));
+-  color:#fff;display:grid;place-items:center;gap:0;
+-  box-shadow:0 6px 20px var(--accent-glow);
+-}
+-.nav .fab.active{color:#fff}
++.nav button.active{color:var(--text)}
+ .home-ind{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:4px;background:rgba(255,255,255,.28);z-index:40;pointer-events:none}
+ 
+ /* ---------- Reproductor a pantalla completa ---------- */
+@@ -256,9 +249,8 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
+ .controls button.sm.on{color:var(--accent)}
+ .play-btn{
+   width:64px;height:64px;border-radius:50%;
+-  background:linear-gradient(150deg,var(--accent),var(--accent-2));
+-  display:grid;place-items:center;color:#fff;
+-  box-shadow:0 8px 26px var(--accent-glow);
++  background:var(--accent);
++  display:grid;place-items:center;color:#000;
+ }
+ .play-btn:active{transform:scale(.95)}
+ .util{display:flex;align-items:center;justify-content:space-between;padding:12px 30px 0;color:#a79fbf}
+@@ -299,12 +291,8 @@ svg{display:block}
+ 
+   <!-- ============ INICIO ============ -->
+   <section class="screen active" id="s-home">
+-    <div class="apphead">
+-      <h1>Mi Música</h1>
+-      <p>Reproduce lo que quieras</p>
+-    </div>
+-    <div class="pad">
+-      <div class="quick" id="quickGrid"></div>
++    <div class="pad" style="padding-top: max(env(safe-area-inset-top), 24px); padding-bottom: 16px;">
++      <h1 class="hero-greet" id="greeting">Buenos días</h1>
+     </div>
+ 
+     <div class="pad section-head"><h2>Escuchado recientemente</h2><a href="#" data-goto="library">Ver todo</a></div>
+@@ -404,22 +392,19 @@ svg{display:block}
+   <!-- ============ NAV ============ -->
+   <nav class="nav" id="nav">
+     <button data-tab="home" class="active">
+-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
++      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+       Inicio
+     </button>
+     <button data-tab="search">
+-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
++      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+       Buscar
+     </button>
+-    <button class="fab" id="fabBtn" title="Abrir reproductor">
+-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="10" width="2.6" height="4" rx="1.3"/><rect x="6.4" y="7" width="2.6" height="10" rx="1.3"/><rect x="10.7" y="3" width="2.6" height="18" rx="1.3"/><rect x="15" y="7" width="2.6" height="10" rx="1.3"/><rect x="19.4" y="10" width="2.6" height="4" rx="1.3"/></svg>
+-    </button>
+     <button data-tab="library">
+-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8v8M12 6v12M16 9v6"/></svg>
+-      Biblioteca
++      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8v8M12 6v12M16 9v6"/></svg>
++      Tu biblioteca
+     </button>
+     <button data-tab="profile">
+-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
++      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+       Perfil
+     </button>
+   </nav>
+@@ -515,18 +500,16 @@ const mk = (title, artist, dur, yt) => {
+    La reproducción usa la IFrame Player API, así que suena de verdad.
+    La duración es aproximada; se corrige sola con la real al reproducir. */
+ const LIB = [
+-  mk('Neverita','Bad Bunny',199,'ARWg160eaX4'),
+-  mk('Tití Me Preguntó','Bad Bunny',243,'WIMWwK7zp3I'),
+-  mk('Moscow Mule','Bad Bunny',246,'p38WgakuYDo'),
+-  mk('Me Porto Bonito','Bad Bunny, Chencho Corleone',178,'UzlkVcIJnlU'),
+-  mk('Efecto','Bad Bunny',223,'IxM-Repiyng'),
+-  mk('Ella Quiere Beber (Remix)','Anuel AA, Romeo Santos',292,'0w3XwPVxcsw'),
+-  mk('Dákiti','Bad Bunny, Jhay Cortez',205,'XbOtHdb8X6Q'),
+-  mk('LALA','Myke Towers',192,'Spd8DBsi07A'),
+-  mk('Where She Goes','Bad Bunny',231,'bef8QLNHubw'),
+-  mk('Classy 101','Feid, Young Miko',207,'cD5T1Y4b7wA'),
+-  mk('Ojitos Lindos','Bad Bunny, Bomba Estéreo',258,'Uk-1uC_kTGQ'),
+-  mk('Volando (Remix)','Mora, Bad Bunny, Sech',240,'P982oehprfY')
++  mk('Fade', 'Alan Walker', 260, 'bM7SZ5SBzyY'),
++  mk('Spectre', 'Alan Walker', 226, 'AOeY-nDp7hI'),
++  mk('Invincible', 'DEAF KEV', 273, 'J2X5mJ3HDYE'),
++  mk('Blank', 'Disfigure', 209, 'p7ZsBPK656s'),
++  mk('My Heart', 'Different Heaven', 267, 'jK2aIUmmdP4'),
++  mk('Heroes Tonight', 'Janji', 208, '3nQNiWdeH2Q'),
++  mk('Cradles', 'Sub Urban', 209, 'Hn4sfC2PbhI'),
++  mk('Fearless', 'Lost Sky', 194, '9rujCfYXhQc'),
++  mk('Sky High', 'Elektronomia', 238, 'TW9d8vYrVFQ'),
++  mk('Mortals', 'Warriyo', 228, 'yJg-Y5byMMw')
+ ];
+ 
+ const PLAYLISTS = [
+@@ -569,9 +552,9 @@ const artEl = (t, cls='') => {
+ };
+ 
+ const ICON = {
+-  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
++  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="transform:translateX(1px)"><path d="M7 4.5v15l13-7.5z"/></svg>',
+   pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="4.5" width="4" height="15" rx="1.3"/><rect x="13.5" y="4.5" width="4" height="15" rx="1.3"/></svg>',
+-  playBig:'<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
++  playBig:'<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="transform:translateX(2px)"><path d="M7 4.5v15l13-7.5z"/></svg>',
+   pauseBig:'<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4.2" height="16" rx="1.5"/><rect x="13.8" y="4" width="4.2" height="16" rx="1.5"/></svg>',
+   kebab:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>',
+   grip:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.6"/><circle cx="15" cy="5" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="19" r="1.6"/><circle cx="15" cy="19" r="1.6"/></svg>',
+@@ -609,16 +592,8 @@ function addToQueue(i){
+ 
+ /* ---------- construir pantallas ---------- */
+ function buildHome(){
+-  const q = $('#quickGrid'); q.innerHTML = '';
+-  LIB.slice(0,4).forEach((t,i)=>{
+-    const b = document.createElement('button');
+-    b.append(artEl(t));
+-    const s = document.createElement('span'); s.textContent = t.title;
+-    s.style.cssText = 'padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+-    b.append(s);
+-    b.onclick = () => { state.idx = i; state.t = 0; play(true); openPlayer(); };
+-    q.append(b);
+-  });
++  const hr = new Date().getHours();
++  $('#greeting').textContent = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
+ 
+   const shelf = (el, items, sub) => {
+     el.innerHTML = '';
+@@ -632,8 +607,8 @@ function buildHome(){
+       el.append(c);
+     });
+   };
+-  shelf($('#recentShelf'), LIB.slice(4,10));
+-  shelf($('#mixShelf'), LIB.slice(2,8), t => 'Mezcla · ' + t.artist.split(',')[0]);
++  shelf($('#recentShelf'), LIB.slice(0,5));
++  shelf($('#mixShelf'), LIB.slice(5,10), t => 'Mezcla · ' + t.artist.split(',')[0]);
+ 
+   const list = $('#homeList'); list.innerHTML = '';
+   LIB.slice(0,5).forEach((t)=> list.append(songRow(t, LIB.indexOf(t))));
+@@ -1057,7 +1032,6 @@ function go(tab){
+ 
+ /* ---------- eventos ---------- */
+ $$('#nav button[data-tab]').forEach(b => b.onclick = () => go(b.dataset.tab));
+-$('#fabBtn').onclick = openPlayer;
+ $('#closePlayer').onclick = closePlayer;
+ $('#mini').onclick = e => { if(!e.target.closest('button')) openPlayer(); };
+ $('#miniPlay').onclick = e => { e.stopPropagation(); play(); };
+
+commit f4fc38b0dbc2a9b23634dcbb6e16ea7436a14a8a
+Author: josue <heribertojosue123@gmail.com>
+Date:   Tue Jul 21 18:33:37 2026 -0600
+
+    Búsqueda en vivo de YouTube via función serverless segura (api/search.js)
+
+diff --git a/README.md b/README.md
+index 3216dc0..ed1113a 100644
+--- a/README.md
++++ b/README.md
+@@ -28,10 +28,27 @@ Publicada con GitHub Pages en:
+ 
+ El botón de los tres puntos en la esquina superior derecha del reproductor alterna entre las dos variantes.
+ 
++## Búsqueda en vivo (YouTube Data API v3)
++
++La pantalla de Buscar consulta YouTube en tiempo real a través de una función
++serverless (`api/search.js`), para que la API key nunca quede expuesta en el
++código público.
++
++Para activarla:
++
++1. Crea una API key en [Google Cloud Console](https://console.cloud.google.com):
++   habilita **YouTube Data API v3** y genera una **Clave de API**.
++2. En Vercel → **Settings → Environment Variables** añade
++   `YOUTUBE_API_KEY` con el valor de tu clave.
++3. Vuelve a desplegar (**Redeploy**).
++
++Sin la variable configurada, la app sigue funcionando con la biblioteca de
++demostración; la sección "En YouTube" solo avisa que falta la key.
++
+ ## Pendiente
+ 
+ - [x] Integrar IFrame Player API para reproducción real (audio de prueba con IDs fijos)
+-- [ ] Conectar YouTube Data API v3 para búsqueda y metadatos en vivo
++- [x] Conectar YouTube Data API v3 para búsqueda en vivo (requiere `YOUTUBE_API_KEY`)
+ - [ ] Persistencia de playlists y favoritos en localStorage
+ - [ ] Definir función del botón central de la barra de navegación
+ - [ ] Reordenamiento por arrastre en la cola
+diff --git a/api/search.js b/api/search.js
+new file mode 100644
+index 0000000..c28e4e5
+--- /dev/null
++++ b/api/search.js
+@@ -0,0 +1,62 @@
++// Función serverless de Vercel: busca canciones en YouTube sin exponer la API key.
++// La clave vive en la variable de entorno YOUTUBE_API_KEY (Vercel > Settings > Environment Variables).
++// El navegador llama a  /api/search?q=...  y este código habla con YouTube por detrás.
++
++function decode(s) {
++  return String(s || '')
++    .replace(/&amp;/g, '&')
++    .replace(/&#39;/g, "'")
++    .replace(/&quot;/g, '"')
++    .replace(/&lt;/g, '<')
++    .replace(/&gt;/g, '>');
++}
++
++module.exports = async (req, res) => {
++  const q = ((req.query && req.query.q) || '').toString().trim();
++
++  if (!q) {
++    res.status(200).json({ items: [] });
++    return;
++  }
++
++  const key = process.env.YOUTUBE_API_KEY;
++  if (!key) {
++    res.status(500).json({ error: 'Falta YOUTUBE_API_KEY' });
++    return;
++  }
++
++  const url = 'https://www.googleapis.com/youtube/v3/search'
++    + '?part=snippet'
++    + '&type=video'
++    + '&videoEmbeddable=true'   // solo videos que se pueden reproducir incrustados
++    + '&maxResults=15'
++    + '&safeSearch=moderate'
++    + '&q=' + encodeURIComponent(q)
++    + '&key=' + key;
++
++  try {
++    const r = await fetch(url);
++    const data = await r.json();
++
++    if (data.error) {
++      const msg = (data.error.errors && data.error.errors[0] && data.error.errors[0].reason) || data.error.message;
++      res.status(500).json({ error: msg });
++      return;
++    }
++
++    const items = (data.items || [])
++      .filter(it => it.id && it.id.videoId)
++      .map(it => ({
++        yt: it.id.videoId,
++        title: decode(it.snippet.title),
++        artist: decode(it.snippet.channelTitle),
++        thumb: (it.snippet.thumbnails && it.snippet.thumbnails.medium && it.snippet.thumbnails.medium.url) || ''
++      }));
++
++    // Cachea 10 min en el borde de Vercel para gastar menos cuota
++    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=86400');
++    res.status(200).json({ items });
++  } catch (e) {
++    res.status(500).json({ error: String(e) });
++  }
++};
+diff --git a/index.html b/index.html
+index e20acf6..ec37ed5 100644
+--- a/index.html
++++ b/index.html
+@@ -664,20 +664,17 @@ function buildSearchIdle(){
+   });
+ }
+ 
++let searchSeq = 0, ytTimer = null;
+ function runSearch(q){
+   const res = $('#searchResults'), idle = $('#searchIdle');
+-  if(!q.trim()){ res.style.display='none'; idle.style.display=''; return; }
++  if(!q.trim()){ res.style.display='none'; idle.style.display=''; clearTimeout(ytTimer); return; }
+   idle.style.display='none'; res.style.display=''; res.innerHTML='';
+   const term = q.toLowerCase();
+   const hits = LIB.filter(t => (t.title+' '+t.artist).toLowerCase().includes(term));
+   const artists = [...new Set(LIB.filter(t=>t.artist.toLowerCase().includes(term)).map(t=>t.artist.split(',')[0]))];
+ 
+-  if(!hits.length && !artists.length){
+-    res.innerHTML = `<div class="empty"><h3>Sin resultados para "${q.replace(/</g,'&lt;')}"</h3><p>Revisa la escritura o prueba con el nombre del artista.</p></div>`;
+-    return;
+-  }
+   if(artists.length){
+-    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>Artistas</h2><a href="#">Ver todo</a></div>`);
++    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>Artistas</h2></div>`);
+     artists.slice(0,3).forEach(a=>{
+       const t = LIB.find(x=>x.artist.startsWith(a));
+       const r = document.createElement('div'); r.className='artist-row';
+@@ -692,9 +689,74 @@ function runSearch(q){
+     });
+   }
+   if(hits.length){
+-    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>Canciones</h2><a href="#">Ver todo</a></div>`);
++    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En tu biblioteca</h2></div>`);
+     hits.slice(0,8).forEach(t => res.append(songRow(t, LIB.indexOf(t))));
+   }
++  // Búsqueda en vivo en YouTube (con debounce para no gastar cuota de más)
++  scheduleYT(q);
++}
++
++function scheduleYT(q){
++  clearTimeout(ytTimer);
++  const seq = ++searchSeq;
++  ytTimer = setTimeout(() => fetchYT(q, seq), 350);
++}
++
++async function fetchYT(q, seq){
++  const res = $('#searchResults');
++  res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En YouTube</h2></div>`);
++  const loading = document.createElement('div');
++  loading.className = 'empty'; loading.style.padding = '24px';
++  loading.innerHTML = '<p>Buscando en YouTube…</p>';
++  res.append(loading);
++  try{
++    const r = await fetch('/api/search?q=' + encodeURIComponent(q));
++    if(seq !== searchSeq) return;          // llegó una búsqueda más nueva, ignora esta
++    const data = await r.json();
++    if(seq !== searchSeq) return;
++    loading.remove();
++    if(data.error){
++      const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
++      e.innerHTML = /YOUTUBE_API_KEY/.test(data.error)
++        ? '<p>Falta configurar la API key de YouTube en Vercel para buscar en vivo.<br>(Mientras tanto, arriba están las de tu biblioteca.)</p>'
++        : '<p>No se pudo buscar en YouTube ahora mismo.</p>';
++      res.append(e); return;
++    }
++    if(!data.items || !data.items.length){
++      const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
++      e.innerHTML = '<p>Sin resultados en YouTube.</p>';
++      res.append(e); return;
++    }
++    data.items.forEach(it => res.append(ytRow({ yt:it.yt, title:it.title, artist:it.artist, dur:0 })));
++  }catch(e){
++    if(seq !== searchSeq) return;
++    loading.innerHTML = '<p>Sin conexión con el buscador.</p>';
++  }
++}
++
++function ytRow(t){
++  const r = document.createElement('div'); r.className='row';
++  r.append(artEl(t));
++  const m = document.createElement('div'); m.className='meta';
++  m.innerHTML = '<h4></h4><p></p>';
++  m.querySelector('h4').textContent = t.title;
++  m.querySelector('p').textContent = t.artist;
++  r.append(m);
++  const k = document.createElement('span'); k.className='kebab'; k.innerHTML = ICON.play;
++  r.append(k);
++  r.onclick = () => playExternal(t);
++  return r;
++}
++
++// Reproduce una canción encontrada en YouTube (la agrega a la biblioteca si es nueva)
++function playExternal(t){
++  let i = LIB.findIndex(x => x.yt === t.yt);
++  if(i < 0){
++    const g = grad();
++    t.c1 = g[0]; t.c2 = g[1]; t.album = t.title; t.dur = t.dur || 0;
++    LIB.push(t); i = LIB.length - 1;
++  }
++  loadTrack(i, true); openPlayer();
+ }
+ 
+ function buildLibrary(){
+@@ -851,7 +913,6 @@ function renderTrack(){
+   }
+   renderStage(); renderPanel();
+   buildHome();
+-  if($('#searchInput').value) runSearch($('#searchInput').value);
+   paint();
+ }
+ 
