@@ -85,7 +85,7 @@ h1.title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 22px}
 .shelf{display:flex;gap:14px;overflow-x:auto;padding:2px 20px 4px;scrollbar-width:none}
 .shelf::-webkit-scrollbar{display:none}
 .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 24px 24px; }
-.quick-grid > div { display:flex; align-items:center; background:var(--surface-2); border-radius:4px; overflow:hidden; gap:8px; padding-right:12px; cursor:pointer; }
+.quick-grid > div { display:flex; align-items:center; background:#2a2a2a; border-radius:6px; overflow:hidden; gap:8px; padding-right:12px; cursor:pointer; }
 .quick-grid > div .art { width:56px; height:56px; border-radius:0; flex-shrink:0; }
 .card{width:136px;flex:none;cursor:pointer}
 .card .art{width:136px;height:136px;box-shadow:0 8px 22px rgba(0,0,0,.5)}
@@ -296,6 +296,9 @@ svg{display:block}
 
   <!-- ============ INICIO ============ -->
   <section class="screen active" id="s-home">
+    <div id="ptr-indicator" style="text-align:center; padding:0; color:var(--muted); height:0; overflow:hidden; transition:height 0.2s; font-size:13px; font-weight:600; display:grid; place-items:center;">
+      <span style="opacity:0; transition:opacity 0.2s;" id="ptr-text">Baja para refrescar</span>
+    </div>
     <div class="pad" style="padding-top: max(env(safe-area-inset-top), 24px); padding-bottom: 16px; display:flex; align-items:center; gap:8px;">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <h1 style="font-size:26px;font-style:italic;font-weight:900;margin:0;letter-spacing:-1px;">OpenTune</h1>
@@ -498,6 +501,7 @@ const state = {
   history: [],
   timer: null, loadedId: null
 };
+try { state.history = JSON.parse(localStorage.getItem('openTuneHistory')) || []; } catch(e) {}
 const cur = () => LIB[state.idx] || mk('Buscando éxitos...','Conectando',0,'');
 const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 const $ = s => document.querySelector(s);
@@ -625,79 +629,110 @@ function addToQueue(i){
 }
 
 /* ---------- construir pantallas ---------- */
-async function buildHome(){
+async function buildHome(force = false){
   const q = $('#quickGrid');
   const rs = $('#recentShelf');
   const ms = $('#mixShelf');
   const hl = $('#homeList');
   
-  if(LIB.length === 0){
-    q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Cargando recomendaciones...</p></div>';
-    try {
-      const data = await searchAppleMusic('exitos reggaeton');
-      if(data.items && data.items.length > 0) {
-        LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt, it.thumb));
-      } else {
-        throw new Error('Sin resultados');
-      }
-    } catch(e) {
-      // Fallback a canciones por defecto si la API falla o llega al límite
-      const fallbacks = [
-        {title: 'PERRO NEGRO', artist: 'Bad Bunny, Feid', yt: 'xl518w3vMng'},
-        {title: 'QLONA', artist: 'Karol G, Peso Pluma', yt: '35TqB6QnXYI'},
-        {title: 'LADY GAGA', artist: 'Peso Pluma, Gabito Ballesteros, Junior H', yt: '3tXw-xQ17yA'},
-        {title: 'UN PREVIEW', artist: 'Bad Bunny', yt: '62Wp9TntVjM'},
-        {title: 'LUNA', artist: 'Feid, ATL Jacob', yt: 'yO76KzN7iR4'},
-        {title: 'MI EX TENÍA RAZÓN', artist: 'Karol G', yt: 'zV2M7Qo1uYk'},
-        {title: 'MONACO', artist: 'Bad Bunny', yt: 'G2eL-x4xHws'},
-        {title: 'PROVENZA', artist: 'Karol G', yt: 'ca48oMV59LU'},
-        {title: 'LA JUMPA', artist: 'Arcangel, Bad Bunny', yt: 'VbA7OQ72KzQ'},
-        {title: 'Lala', artist: 'Myke Towers', yt: 'f72i6l_PqZk'},
-        {title: 'CLASSY 101', artist: 'Feid, Young Miko', yt: 'uJvY79iFmJ0'},
-        {title: 'TQM', artist: 'Fuerza Regida', yt: 'fC9p-k1u6cI'}
-      ];
-      LIB = fallbacks.map(it => mk(it.title, it.artist, 0, it.yt));
-    }
-    loadTrack(0, false);
-    buildSearchIdle(); buildLibrary();
+  if (force) toast('Refrescando inicio...');
+
+  let historyTracks = state.history || [];
+  if(historyTracks.length === 0){
+    const fallbacks = [
+      {title: 'PERRO NEGRO', artist: 'Bad Bunny, Feid', yt: 'xl518w3vMng'},
+      {title: 'QLONA', artist: 'Karol G, Peso Pluma', yt: '35TqB6QnXYI'},
+      {title: 'LADY GAGA', artist: 'Peso Pluma, Gabito Ballesteros, Junior H', yt: '3tXw-xQ17yA'},
+      {title: 'UN PREVIEW', artist: 'Bad Bunny', yt: '62Wp9TntVjM'},
+      {title: 'LUNA', artist: 'Feid, ATL Jacob', yt: 'yO76KzN7iR4'},
+      {title: 'MI EX TENÍA RAZÓN', artist: 'Karol G', yt: 'zV2M7Qo1uYk'},
+      {title: 'MONACO', artist: 'Bad Bunny', yt: 'G2eL-x4xHws'},
+      {title: 'PROVENZA', artist: 'Karol G', yt: 'ca48oMV59LU'},
+      {title: 'LA JUMPA', artist: 'Arcangel, Bad Bunny', yt: 'VbA7OQ72KzQ'},
+      {title: 'Lala', artist: 'Myke Towers', yt: 'f72i6l_PqZk'},
+      {title: 'CLASSY 101', artist: 'Feid, Young Miko', yt: 'uJvY79iFmJ0'},
+      {title: 'TQM', artist: 'Fuerza Regida', yt: 'fC9p-k1u6cI'}
+    ];
+    historyTracks = fallbacks.map(it => mk(it.title, it.artist, 0, it.yt));
   }
 
   q.innerHTML = '';
-  LIB.slice(0,6).forEach((t,i)=>{
+  historyTracks.slice(0,6).forEach((t)=>{
     const c = document.createElement('div');
     const a = artEl(t);
     const text = document.createElement('span');
     text.style.cssText = 'font-size:13px; font-weight:700; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2;';
     text.textContent = t.title;
     c.append(a, text);
-    c.onclick = () => { state.idx = i; state.t = 0; play(true); openPlayer(); };
+    c.onclick = () => playExternal(t);
     q.append(c);
   });
 
-  const shelf = (el, items, sub) => {
+  const shelf = (el, items, sub, onClick) => {
     el.innerHTML = '';
-    items.forEach((t,i)=>{
+    items.forEach((t)=>{
       const c = document.createElement('div');
       c.style.cssText = 'flex:0 0 140px; display:flex; flex-direction:column; gap:8px; cursor:pointer;';
       const a = artEl(t);
       a.style.width = '140px'; a.style.height = '140px'; a.style.borderRadius = '16px';
       c.append(a);
       const m = document.createElement('div'); m.className='meta';
-      m.innerHTML = '<h4 style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;"></h4><p style="font-size:12px;color:var(--accent-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;"></p>';
-      m.querySelector('h4').textContent = t.title;
+      m.innerHTML = '<h4 style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;"></h4><p style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;"></p>';
+      m.querySelector('h4').textContent = t.title || t.name;
       m.querySelector('p').textContent = sub ? sub(t) : t.artist;
       c.append(m);
-      c.onclick = () => { state.idx = LIB.indexOf(t); state.t = 0; play(true); openPlayer(); };
+      c.onclick = () => onClick ? onClick(t) : playExternal(t);
       el.append(c);
     });
   };
-  if(LIB.length >= 10){
-    shelf($('#recentShelf'), LIB.slice(4,10));
-    shelf($('#mixShelf'), LIB.slice(2,8), t => 'Mezcla · ' + t.artist.split(',')[0]);
-  }
 
-  const list = $('#homeList'); list.innerHTML = '';
-  LIB.slice(0,5).forEach((t)=> list.append(songRow(t, LIB.indexOf(t))));
+  if (historyTracks.length > 0) {
+    shelf(rs, historyTracks.slice(0,10));
+  }
+  
+  const artists = [...new Set(historyTracks.map(t => (t.artist || '').split(',')[0].trim()).filter(Boolean))];
+  const mixItems = artists.slice(0, 10).map(a => {
+    const t = historyTracks.find(x => x.artist.includes(a));
+    return { name: `Mix de ${a}`, artist: 'OpenTune', cover: t.cover, mixArtist: a };
+  });
+  
+  shelf(ms, mixItems, () => 'OpenTune', async (mItem) => {
+    toast('Generando mix de ' + mItem.mixArtist + '...');
+    const data = await searchAppleMusic(mItem.mixArtist + ' oficial');
+    if (data.items && data.items.length) {
+      const startIndex = LIB.length;
+      data.items.sort(() => Math.random() - 0.5);
+      for(let it of data.items) LIB.push(mk(it.title, it.artist, 0, null, it.thumb));
+      loadTrack(startIndex, true); openPlayer();
+    } else {
+      toast('No se pudo generar mix.');
+    }
+  });
+
+  if (force) {
+    const terms = ['reggaeton', 'trap latino', 'latin hits', 'pop latino', 'corridos tumbados', 'exitos'];
+    const randomTerm = terms[Math.floor(Math.random() * terms.length)];
+    const data = await searchAppleMusic(randomTerm);
+    if(data.items && data.items.length > 0) {
+       hl.innerHTML = '';
+       data.items.slice(0, 5).forEach((t) => {
+         const track = mk(t.title, t.artist, 0, null, t.thumb);
+         LIB.push(track);
+         hl.append(songRow(track, LIB.length - 1));
+       });
+    }
+  } else if (LIB.length === 0) {
+    const fallbacks = [
+      {title: 'PERRO NEGRO', artist: 'Bad Bunny, Feid', yt: 'xl518w3vMng'},
+      {title: 'QLONA', artist: 'Karol G, Peso Pluma', yt: '35TqB6QnXYI'},
+      {title: 'LADY GAGA', artist: 'Peso Pluma, Gabito Ballesteros, Junior H', yt: '3tXw-xQ17yA'}
+    ];
+    LIB = fallbacks.map(it => mk(it.title, it.artist, 0, it.yt));
+    hl.innerHTML = '';
+    LIB.slice(0, 5).forEach((t, i) => hl.append(songRow(t, i)));
+    loadTrack(0, false);
+    buildSearchIdle(); buildLibrary();
+  }
 }
 
 function buildSearchIdle(){
@@ -821,14 +856,15 @@ function ytRow(t){
   return r;
 }
 
-// Reproduce una canción encontrada en Apple Music (la agrega a la biblioteca si es nueva)
+// Reproduce una canción encontrada en Apple Music o el historial
 function playExternal(t){
   let i = LIB.findIndex(x => x.title === t.title && x.artist === t.artist);
   if(i < 0){
     const g = grad();
-    t.c1 = g[0]; t.c2 = g[1]; t.album = t.title; t.dur = t.dur || 0;
-    LIB.push(t); i = LIB.length - 1;
+    const newT = { ...t, c1: g[0], c2: g[1], album: t.album || t.title, dur: t.dur || 0 };
+    LIB.push(newT); i = LIB.length - 1;
   }
+  state.idx = i;
   loadTrack(i, true); openPlayer();
 }
 
@@ -969,6 +1005,7 @@ async function loadTrack(i, autoplay=true){
   state.history = state.history.filter(x => x.title !== t.title);
   state.history.unshift(t);
   if(state.history.length > 20) state.history.pop();
+  try { localStorage.setItem('openTuneHistory', JSON.stringify(state.history)); } catch(e) {}
   buildSearchIdle();
 
   renderTrack();
@@ -1025,18 +1062,23 @@ async function next(){
       const data = await searchAppleMusic(artist + ' oficial');
       if(data.items && data.items.length) {
         let added = false;
+        data.items.sort(() => Math.random() - 0.5);
         for(let it of data.items) {
           if(!LIB.find(x => x.title === it.title && x.artist === it.artist)) {
             LIB.push(mk(it.title, it.artist, 0, null, it.thumb));
             added = true;
           }
         }
-        if(added) {
-          loadTrack(state.idx + 1, true);
-          return;
+        if(!added) {
+          // Si todo ya estaba en LIB, agregamos una aleatoria para forzar radio infinito
+          const randIt = data.items[Math.floor(Math.random() * data.items.length)];
+          LIB.push(mk(randIt.title, randIt.artist, 0, null, randIt.thumb));
         }
+        loadTrack(state.idx + 1, true);
+        return;
       }
     } catch(e) {}
+    toast('No hay más música similar.');
   }
   loadTrack((state.idx + 1) % LIB.length, true);
 }
@@ -1162,6 +1204,50 @@ $$('[data-goto]').forEach(a => a.onclick = e => { e.preventDefault(); go(a.datas
 buildHome(); buildSearchIdle(); buildLibrary(); buildProfile();
 $('#playBtn').innerHTML = ICON.playBig;
 renderTrack();
+
+/* ---------- Pull to Refresh ---------- */
+let ptrStartY = 0;
+let ptrRefreshing = false;
+const homeEl = $('#s-home');
+const ptrInd = $('#ptr-indicator');
+const ptrText = $('#ptr-text');
+
+homeEl.addEventListener('touchstart', e => {
+  if (homeEl.scrollTop === 0) ptrStartY = e.touches[0].clientY;
+  else ptrStartY = 0;
+}, {passive: true});
+
+homeEl.addEventListener('touchmove', e => {
+  if (!ptrStartY || ptrRefreshing) return;
+  const dy = e.touches[0].clientY - ptrStartY;
+  if (dy > 0) {
+    ptrInd.style.transition = 'none';
+    ptrInd.style.height = Math.min(dy * 0.4, 60) + 'px';
+    ptrText.style.opacity = Math.min(dy / 100, 1);
+    if (dy > 120) ptrText.textContent = 'Suelta para refrescar';
+    else ptrText.textContent = 'Baja para refrescar';
+    if (e.cancelable) e.preventDefault();
+  }
+}, {passive: false});
+
+homeEl.addEventListener('touchend', async e => {
+  if (!ptrStartY || ptrRefreshing) return;
+  ptrStartY = 0;
+  const h = parseInt(ptrInd.style.height || 0);
+  ptrInd.style.transition = 'height 0.2s';
+  if (h > 40) {
+    ptrRefreshing = true;
+    ptrInd.style.height = '40px';
+    ptrText.textContent = 'Refrescando...';
+    await buildHome(true);
+    ptrInd.style.height = '0';
+    ptrText.style.opacity = '0';
+    setTimeout(() => ptrRefreshing = false, 300);
+  } else {
+    ptrInd.style.height = '0';
+    ptrText.style.opacity = '0';
+  }
+});
 </script>
 <!-- API de reproducción de YouTube (motor de audio) -->
 <script src="https://www.youtube.com/iframe_api"></script>
