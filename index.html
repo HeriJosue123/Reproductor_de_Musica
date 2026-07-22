@@ -551,6 +551,12 @@ function rankByRelevance(query, items){
   return scored.filter(s => s.score > 0).sort((a,b) => b.score - a.score).map(s => s.it);
 }
 
+/* Apple Music ya NO se usa para la caja de búsqueda (eso ahora consulta
+   YouTube directo en fetchYT). Aquí se usa solo para descubrimiento interno
+   (radio infinita, mixes, portadas) — por eso NO se filtra con
+   rankByRelevance: ahí queremos amplitud de resultados, no precisión
+   estricta, para no quedarnos sin candidatos y terminar rebotando a las
+   canciones semilla del inicio. */
 async function searchAppleMusic(q) {
   try {
     const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=25`);
@@ -561,7 +567,7 @@ async function searchAppleMusic(q) {
       thumb: it.artworkUrl100 ? it.artworkUrl100.replace('100x100bb', '600x600bb') : '',
       yt: null // se obtendrá bajo demanda
     }));
-    return { items: rankByRelevance(q, items) };
+    return { items };
   } catch(e) {
     return { error: 'Error al conectar con Apple Music.' };
   }
@@ -733,8 +739,14 @@ async function buildHome(force = false){
   });
 
   if (force) {
-    const terms = ['reggaeton', 'trap latino', 'latin hits', 'pop latino', 'corridos tumbados', 'exitos'];
-    const randomTerm = terms[Math.floor(Math.random() * terms.length)];
+    // Basa el refresco en lo que TÚ buscaste/escuchaste, no en términos
+    // genéricos (evita que aparezcan compilados tipo "Spanish Hits 2023").
+    // Solo si aún no tienes actividad usa una categoría general de respaldo.
+    const histArtists = [...new Set((state.history||[]).map(t => (t.artist||'').split(',')[0].trim()).filter(Boolean))];
+    const personal = [...(state.recents||[]), ...histArtists];
+    const generic = ['reggaeton', 'trap latino', 'latin hits', 'pop latino', 'corridos tumbados', 'exitos'];
+    const pool = personal.length ? personal : generic;
+    const randomTerm = pool[Math.floor(Math.random() * pool.length)];
     const data = await searchAppleMusic(randomTerm);
     if(data.items && data.items.length > 0) {
        hl.innerHTML = '';
@@ -1095,31 +1107,34 @@ function seekTo(sec){
 async function next(){
   if(state.repeat) { loadTrack(state.idx, true); return; }
   if(state.shuffle) { loadTrack(Math.floor(Math.random()*LIB.length), true); return; }
-  
+
   if(state.idx === LIB.length - 1) {
     toast('Buscando similares...');
-    const artist = cur().artist || cur().title.split('-')[0] || 'Mix';
+    const justPlayedIdx = state.idx;
+    const artist = (cur().artist || cur().title || 'Mix').split(',')[0].trim();
     try {
-      const data = await searchAppleMusic(artist + ' oficial');
+      const data = await searchAppleMusic(artist);
       if(data.items && data.items.length) {
         let added = false;
-        data.items.sort(() => Math.random() - 0.5);
-        for(let it of data.items) {
+        const shuffled = [...data.items].sort(() => Math.random() - 0.5);
+        for(let it of shuffled) {
           if(!LIB.find(x => x.title === it.title && x.artist === it.artist)) {
             LIB.push(mk(it.title, it.artist, 0, null, it.thumb));
             added = true;
           }
         }
-        if(!added) {
-          // Si todo ya estaba en LIB, agregamos una aleatoria para forzar radio infinito
-          const randIt = data.items[Math.floor(Math.random() * data.items.length)];
-          LIB.push(mk(randIt.title, randIt.artist, 0, null, randIt.thumb));
-        }
-        loadTrack(state.idx + 1, true);
-        return;
+        if(added){ loadTrack(justPlayedIdx + 1, true); return; }
       }
     } catch(e) {}
-    toast('No hay más música similar.');
+    // No se encontró nada nuevo similar: sigue con algo YA en tu biblioteca
+    // (nunca el índice 0, para no "reiniciar" siempre a las mismas semillas)
+    toast('Sin más similares por ahora, seguimos con tu biblioteca.');
+    if(LIB.length > 1){
+      let pick;
+      do { pick = Math.floor(Math.random() * LIB.length); } while (pick === justPlayedIdx);
+      loadTrack(pick, true);
+      return;
+    }
   }
   loadTrack((state.idx + 1) % LIB.length, true);
 }
