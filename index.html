@@ -287,6 +287,16 @@ svg{display:block}
 <body>
 <div class="phone">
 
+  <!-- Pantalla de nombre: la ve una sola vez por dispositivo/persona -->
+  <div id="nameGate" style="position:absolute;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px;text-align:center">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <h2 style="font-size:20px;font-weight:800">¿Cómo te llamas?</h2>
+    <p style="color:var(--muted);font-size:13.5px;margin-top:-8px">Así sabemos que tus me gusta e historial son tuyos, no de los demás.</p>
+    <input id="nameInput" type="text" placeholder="Tu nombre" maxlength="30"
+      style="width:100%;max-width:260px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:13px 14px;color:var(--text);font:inherit;font-size:15px;text-align:center;outline:none">
+    <button id="nameSubmit" style="background:var(--accent);border:none;color:#fff;font:inherit;font-weight:700;font-size:15px;padding:13px 30px;border-radius:999px;cursor:pointer">Continuar</button>
+  </div>
+
   <!-- Reproductor de YouTube oculto (motor de audio real) -->
   <div id="ytHost"></div>
 
@@ -441,6 +451,11 @@ svg{display:block}
     </div> <!-- closes .player-inner -->
   </div> <!-- closes .player -->
 
+<!-- Firebase: cuentas por persona (anónimas) + base de datos privada por usuario -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 <script>
 /* ============================================================
    Datos de demostración. Cuando conectemos la API de YouTube,
@@ -472,9 +487,85 @@ const state = {
   history: [],
   timer: null, loadedId: null
 };
-try { state.history = JSON.parse(localStorage.getItem('openTuneHistory')) || []; } catch(e) {}
 const cur = () => LIB[state.idx] || mk('Buscando éxitos...','Conectando',0,'');
 const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+/* ---------- Firebase: una cuenta por persona (invisible, sin contraseña) ----------
+   Cada dispositivo obtiene un ID seguro de Firebase (anónimo, no falsificable).
+   Se pide el nombre solo como etiqueta bonita; la privacidad real la protegen
+   las reglas de Firestore usando ese ID, no el nombre. */
+const firebaseConfig = {
+  apiKey: "AIzaSyCsKg4jgeV_y5uuiy-KpXqnTpaDRNsJ1Yo",
+  authDomain: "reproductor-musica-98897.firebaseapp.com",
+  projectId: "reproductor-musica-98897",
+  storageBucket: "reproductor-musica-98897.firebasestorage.app",
+  messagingSenderId: "865406826526",
+  appId: "1:865406826526:web:6ab34389a881d5b638d60f"
+};
+firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
+const db = firebase.firestore();
+let currentUid = null;
+let saveTimer = null;
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveUserData, 800);
+}
+function saveUserData(){
+  if(!currentUid) return;
+  db.collection('users').doc(currentUid).set({
+    name: localStorage.getItem('openTuneName') || '',
+    likes: state.likes,
+    folders: state.folders,
+    history: state.history
+  }, { merge:true }).catch(e => console.warn('Firestore: no se pudo guardar', e));
+}
+
+function askName(){
+  return new Promise(resolve => {
+    const gate = $('#nameGate');
+    gate.style.display = 'flex';
+    const submit = () => {
+      const v = $('#nameInput').value.trim();
+      if(!v) return;
+      gate.style.display = 'none';
+      resolve(v);
+    };
+    $('#nameSubmit').onclick = submit;
+    $('#nameInput').onkeydown = e => { if(e.key === 'Enter') submit(); };
+    setTimeout(()=>$('#nameInput').focus(), 200);
+  });
+}
+
+async function initUser(){
+  await new Promise(resolve => {
+    const unsub = fbAuth.onAuthStateChanged(user => {
+      if(user){ unsub(); resolve(user); }
+      else fbAuth.signInAnonymously().catch(e => { console.error('Error de acceso', e); resolve(null); });
+    });
+  });
+  currentUid = fbAuth.currentUser ? fbAuth.currentUser.uid : null;
+  if(!currentUid){ toast('No se pudo conectar con tu cuenta. Revisa tu conexión.'); return; }
+
+  let name = localStorage.getItem('openTuneName');
+  if(!name){
+    name = await askName();
+    localStorage.setItem('openTuneName', name);
+  }
+
+  try{
+    const doc = await db.collection('users').doc(currentUid).get();
+    if(doc.exists){
+      const d = doc.data();
+      state.likes = d.likes || [];
+      state.folders = d.folders || [];
+      state.history = d.history || [];
+    }
+  }catch(e){ console.warn('Firestore: no se pudo cargar', e); }
+
+  saveUserData();
+}
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
@@ -901,14 +992,14 @@ function playExternal(t){
   loadTrack(i, true); openPlayer();
 }
 
-/* ---------- Biblioteca: "Me gusta" + carpetas (local por ahora, luego irá a la BD) ---------- */
-try { state.likes = JSON.parse(localStorage.getItem('openTuneLikes')) || []; } catch(e) { state.likes = []; }
-try { state.folders = JSON.parse(localStorage.getItem('openTuneFolders')) || []; } catch(e) { state.folders = []; }
+/* ---------- Biblioteca: "Me gusta" + carpetas (guardado en Firestore, privado por persona) ---------- */
+state.likes = [];
+state.folders = [];
 
 const likeKey = t => (t.title || '') + '|' + (t.artist || '');
 const isLiked = t => state.likes.some(x => likeKey(x) === likeKey(t));
-function saveLikes(){ try { localStorage.setItem('openTuneLikes', JSON.stringify(state.likes)); } catch(e) {} }
-function saveFolders(){ try { localStorage.setItem('openTuneFolders', JSON.stringify(state.folders)); } catch(e) {} }
+function saveLikes(){ scheduleSave(); }
+function saveFolders(){ scheduleSave(); }
 
 function toggleLike(t){
   const on = !isLiked(t);
@@ -1060,7 +1151,7 @@ async function loadTrack(i, autoplay=true){
   state.history = state.history.filter(x => x.title !== t.title);
   state.history.unshift(t);
   if(state.history.length > 20) state.history.pop();
-  try { localStorage.setItem('openTuneHistory', JSON.stringify(state.history)); } catch(e) {}
+  scheduleSave();
   buildSearchIdle();
 
   renderTrack();
@@ -1267,9 +1358,13 @@ $('#clearRecents').onclick = e => { e.preventDefault(); state.recents = []; buil
 $$('[data-goto]').forEach(a => a.onclick = e => { e.preventDefault(); go(a.dataset.goto); });
 
 /* ---------- arranque ---------- */
-buildHome(); buildSearchIdle(); buildLibrary();
-$('#playBtn').innerHTML = ICON.playBig;
-renderTrack();
+async function startApp(){
+  await initUser();               // espera la cuenta (anónima) + carga tus datos de Firestore
+  buildHome(); buildSearchIdle(); buildLibrary();
+  $('#playBtn').innerHTML = ICON.playBig;
+  renderTrack();
+}
+startApp();
 
 /* ---------- Pull to Refresh ---------- */
 let ptrStartY = 0;
