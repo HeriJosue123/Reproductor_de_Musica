@@ -478,9 +478,9 @@ const G = [
 let gi = 0;
 const grad = () => G[gi++ % G.length];
 
-const mk = (title, artist, dur, yt) => {
+const mk = (title, artist, dur, yt, cover = null) => {
   const g = grad();
-  return { title, artist, dur, yt, album: title, c1: g[0], c2: g[1] };
+  return { title, artist, dur, yt, cover, album: title, c1: g[0], c2: g[1] };
 };
 
 /* Canciones recomendadas (se cargan dinámicamente) */
@@ -548,11 +548,32 @@ async function searchYouTube(q) {
   return { error: 'Todas las llaves han fallado.' };
 }
 
+async function searchAppleMusic(q) {
+  try {
+    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=15`);
+    const data = await r.json();
+    const items = (data.results || []).map(it => ({
+      title: it.trackName,
+      artist: it.artistName,
+      thumb: it.artworkUrl100 ? it.artworkUrl100.replace('100x100bb', '600x600bb') : '',
+      yt: null // se obtendrá bajo demanda
+    }));
+    return { items };
+  } catch(e) {
+    return { error: 'Error al conectar con Apple Music.' };
+  }
+}
+
 const artEl = (t, cls='') => {
   const d = document.createElement('div');
   d.className = 'art ' + cls;
   d.style.setProperty('--c1', t.c1); d.style.setProperty('--c2', t.c2);
-  if(t.yt){
+  if (t.cover) {
+    const img = document.createElement('img');
+    img.className = 'art-img'; img.alt = '';
+    img.src = t.cover;
+    d.append(img);
+  } else if(t.yt){
     // Carátula real: miniatura del video de YouTube (con degradado de respaldo detrás)
     const img = document.createElement('img');
     img.className = 'art-img'; img.alt = '';
@@ -617,11 +638,11 @@ async function buildHome(){
   if(LIB.length === 0){
     q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Cargando recomendaciones...</p></div>';
     try {
-      const data = await searchYouTube('exitos latinos oficiales audio');
+      const data = await searchAppleMusic('exitos latinos oficiales');
       if(data.items && data.items.length > 0) {
-        LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt));
+        LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt, it.thumb));
       } else {
-        throw new Error('Sin resultados (posible límite de API)');
+        throw new Error('Sin resultados');
       }
     } catch(e) {
       // Fallback a canciones por defecto si la API falla o llega al límite
@@ -764,29 +785,29 @@ function scheduleYT(q){
 
 async function fetchYT(q, seq){
   const res = $('#searchResults');
-  res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En YouTube</h2></div>`);
+  res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En Apple Music</h2></div>`);
   const loading = document.createElement('div');
   loading.className = 'empty'; loading.style.padding = '24px';
-  loading.innerHTML = '<p>Buscando en YouTube…</p>';
+  loading.innerHTML = '<p>Buscando en catálogo oficial...</p>';
   res.append(loading);
   try{
-    const data = await searchYouTube(q);
+    const data = await searchAppleMusic(q);
     if(seq !== searchSeq) return;
     loading.remove();
     if(data.error){
       const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
-      e.innerHTML = `<p>${data.error}<br><br>(Configura tus llaves en la variable YOUTUBE_KEYS)</p>`;
+      e.innerHTML = `<p>${data.error}</p>`;
       res.append(e); return;
     }
     if(!data.items || !data.items.length){
       const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
-      e.innerHTML = '<p>Sin resultados en YouTube.</p>';
+      e.innerHTML = '<p>Sin resultados en Apple Music.</p>';
       res.append(e); return;
     }
-    data.items.forEach(it => res.append(ytRow({ yt:it.yt, title:it.title, artist:it.artist, dur:0 })));
+    data.items.forEach(it => res.append(ytRow({ yt:null, title:it.title, artist:it.artist, dur:0, cover:it.thumb })));
   }catch(e){
     if(seq !== searchSeq) return;
-    loading.innerHTML = '<p>Sin conexión con el buscador.</p>';
+    loading.remove();
   }
 }
 
@@ -804,9 +825,9 @@ function ytRow(t){
   return r;
 }
 
-// Reproduce una canción encontrada en YouTube (la agrega a la biblioteca si es nueva)
+// Reproduce una canción encontrada en Apple Music (la agrega a la biblioteca si es nueva)
 function playExternal(t){
-  let i = LIB.findIndex(x => x.yt === t.yt);
+  let i = LIB.findIndex(x => x.title === t.title && x.artist === t.artist);
   if(i < 0){
     const g = grad();
     t.c1 = g[0]; t.c2 = g[1]; t.album = t.title; t.dur = t.dur || 0;
@@ -934,17 +955,30 @@ function setPlaying(on){
 }
 
 /* Carga una canción (por índice) y opcionalmente la reproduce */
-function loadTrack(i, autoplay=true){
+async function loadTrack(i, autoplay=true){
   state.idx = i; state.t = 0;
   const t = cur();
   
   if(!state.history) state.history = [];
-  state.history = state.history.filter(x => x.yt !== t.yt);
+  state.history = state.history.filter(x => x.title !== t.title);
   state.history.unshift(t);
   if(state.history.length > 20) state.history.pop();
   buildSearchIdle();
 
   renderTrack();
+  
+  if (!t.yt) {
+    toast('Cargando audio...');
+    const ytData = await searchYouTube(t.artist + ' ' + t.title + ' audio oficial');
+    if (ytData.items && ytData.items.length > 0) {
+      t.yt = ytData.items[0].yt;
+    } else {
+      toast('No se encontró audio para: ' + t.title);
+      setTimeout(next, 2000);
+      return;
+    }
+  }
+  
   if(t.yt) loadYT(t.yt, autoplay);
   setPlaying(autoplay);
 }
@@ -975,12 +1009,12 @@ async function next(){
     toast('Buscando similares...');
     const artist = cur().artist || cur().title.split('-')[0] || 'Mix';
     try {
-      const data = await searchYouTube(artist + ' oficial');
+      const data = await searchAppleMusic(artist + ' oficial');
       if(data.items && data.items.length) {
         let added = false;
         for(let it of data.items) {
-          if(!LIB.find(x => x.yt === it.yt)) {
-            LIB.push(mk(it.title, it.artist, 0, it.yt));
+          if(!LIB.find(x => x.title === it.title && x.artist === it.artist)) {
+            LIB.push(mk(it.title, it.artist, 0, null, it.thumb));
             added = true;
           }
         }
