@@ -730,16 +730,12 @@ async function fetchYT(q, seq){
   loading.innerHTML = '<p>Buscando en YouTube…</p>';
   res.append(loading);
   try{
-    const r = await fetch('/api/search?q=' + encodeURIComponent(q));
-    if(seq !== searchSeq) return;          // llegó una búsqueda más nueva, ignora esta
-    const data = await r.json();
+    const data = await searchYouTube(q);
     if(seq !== searchSeq) return;
     loading.remove();
     if(data.error){
       const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
-      e.innerHTML = /YOUTUBE_API_KEY/.test(data.error)
-        ? '<p>Falta configurar la API key de YouTube en Vercel para buscar en vivo.<br>(Mientras tanto, arriba están las de tu biblioteca.)</p>'
-        : '<p>No se pudo buscar en YouTube ahora mismo.</p>';
+      e.innerHTML = `<p>${data.error}<br><br>(Configura tus llaves en la variable YOUTUBE_KEYS)</p>`;
       res.append(e); return;
     }
     if(!data.items || !data.items.length){
@@ -939,8 +935,7 @@ async function next(){
     toast('Buscando similares...');
     const artist = cur().artist || cur().title.split('-')[0] || 'Mix';
     try {
-      const r = await fetch('/api/search?q=' + encodeURIComponent(artist + ' oficial'));
-      const data = await r.json();
+      const data = await searchYouTube(artist + ' oficial');
       if(data.items && data.items.length) {
         let added = false;
         for(let it of data.items) {
