@@ -619,21 +619,6 @@ async function buildHome(){
   $('#greeting').textContent = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
 
   const q = $('#quickGrid'); 
-  const rs = $('#recentShelf');
-  const ms = $('#mixShelf');
-  const hl = $('#homeList');
-  
-  if(LIB.length === 0){
-    q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Cargando recomendaciones...</p></div>';
-    rs.innerHTML = ''; ms.innerHTML = ''; hl.innerHTML = '';
-    try {
-      const r = await fetch('/api/home');
-      const data = await r.json();
-      if(data.items && data.items.length > 0) {
-        LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt));
-        loadTrack(0, false); // Carga la primera canción sin reproducirla
-        buildSearchIdle(); buildLibrary();
-      }
     } catch(e) {
       q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Error al conectar con YouTube</p></div>';
       return;

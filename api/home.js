@@ -18,14 +18,15 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Búsqueda genérica de éxitos musicales para que siempre haya contenido
-  const query = 'exitos reggaeton 2024';
+  // Búsqueda de canciones individuales (evitamos los mixes largos)
+  const query = 'reggaeton official video -mix -mixes';
 
   const url = 'https://www.googleapis.com/youtube/v3/search'
     + '?part=snippet'
     + '&type=video'
     + '&videoEmbeddable=true'   // Solo videos que se pueden incrustar
     + '&videoCategoryId=10'     // Categoría Música
+    + '&videoDuration=short'    // FUNDAMENTAL: Solo videos de menos de 4 minutos (evita los mixes de 1 hora)
     + '&maxResults=15'          // Suficientes para llenar la pantalla de inicio
     + '&safeSearch=moderate'
     + '&q=' + encodeURIComponent(query)
