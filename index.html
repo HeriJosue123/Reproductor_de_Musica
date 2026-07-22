@@ -568,9 +568,9 @@ const artEl = (t, cls='') => {
 };
 
 const ICON = {
-  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="transform:translateX(1px)"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
   pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="4.5" width="4" height="15" rx="1.3"/><rect x="13.5" y="4.5" width="4" height="15" rx="1.3"/></svg>',
-  playBig:'<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="transform:translateX(2px)"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  playBig:'<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
   pauseBig:'<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4.2" height="16" rx="1.5"/><rect x="13.8" y="4" width="4.2" height="16" rx="1.5"/></svg>',
   kebab:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>',
   grip:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.6"/><circle cx="15" cy="5" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="19" r="1.6"/><circle cx="15" cy="19" r="1.6"/></svg>',
@@ -915,6 +915,7 @@ function renderTrack(){
   }
   renderStage(); renderPanel();
   buildHome();
+  if($('#searchInput').value) runSearch($('#searchInput').value);
   paint();
 }
 
@@ -1020,7 +1021,7 @@ let yt = null, ytReady = false, pendingId = null;
 window.onYouTubeIframeAPIReady = function(){
   yt = new YT.Player('ytHost', {
     height:'1', width:'1',
-    playerVars:{ playsinline:1, controls:0, disablekb:1, rel:0 },
+    playerVars:{ playsinline:1, controls:0, disablekb:1, rel:0, origin: window.location.origin },
     events:{
       onReady: () => { ytReady = true; if(pendingId){ loadYT(pendingId, true); pendingId = null; } },
       onStateChange: onYTState,
