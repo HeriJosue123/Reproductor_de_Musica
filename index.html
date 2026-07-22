@@ -988,7 +988,7 @@ function play(on){
   const want = on !== undefined ? on : !state.playing;
   const t = cur();
   // Si se pide reproducir una canción que aún no está cargada, la carga
-  if(want && t.yt && state.loadedId !== t.yt){ loadTrack(state.idx, true); return; }
+  if(want && (!t.yt || state.loadedId !== t.yt)){ loadTrack(state.idx, true); return; }
   if(yt && ytReady && t.yt){ want ? yt.playVideo() : yt.pauseVideo(); }
   setPlaying(want);
 }
