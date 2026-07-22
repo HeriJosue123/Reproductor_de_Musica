@@ -507,6 +507,47 @@ const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
+// --- ROTACIÓN DE API KEYS PARA LA APK ---
+const YOUTUBE_KEYS = [
+  'AIzaSyCWciQ2xa2DkGR9eQBnArMi2lp_WR9zDf0',
+  'AIzaSyBpbBeoRdOdBKBcwwL2Vk2ayxkBGmqqi0w',
+  'AIzaSyCSnJhjXLaTJ9LYfkujDJt6a-Pjy29IvNA',
+  'AIzaSyBqiKrUmPKeMqB7Y3K9jc4Kjs8DUYd-YQw',
+  'AIzaSyC3X8NcrqgUULufh40XGLICohRmVSziKZk'
+];
+let currentKeyIndex = 0;
+
+async function searchYouTube(q) {
+  if (!YOUTUBE_KEYS.length || YOUTUBE_KEYS[0] === 'TU_API_KEY_1') {
+    return { error: 'Falta configurar las YOUTUBE_KEYS en el código.' };
+  }
+  for (let i = 0; i < YOUTUBE_KEYS.length; i++) {
+    const key = YOUTUBE_KEYS[currentKeyIndex];
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=15&safeSearch=moderate&q=${encodeURIComponent(q)}&key=${key}`;
+    try {
+      const r = await fetch(url);
+      const data = await r.json();
+      if (data.error) {
+        console.warn('Llave falló, rotando:', currentKeyIndex, data.error.message);
+        currentKeyIndex = (currentKeyIndex + 1) % YOUTUBE_KEYS.length;
+        continue;
+      }
+      const decode = s => String(s || '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      const items = (data.items || []).filter(it => it.id && it.id.videoId).map(it => ({
+        yt: it.id.videoId,
+        title: decode(it.snippet.title),
+        artist: decode(it.snippet.channelTitle),
+        thumb: (it.snippet.thumbnails && it.snippet.thumbnails.medium && it.snippet.thumbnails.medium.url) || ''
+      }));
+      return { items };
+    } catch(e) {
+      console.warn('Error de red, rotando llave:', currentKeyIndex);
+      currentKeyIndex = (currentKeyIndex + 1) % YOUTUBE_KEYS.length;
+    }
+  }
+  return { error: 'Todas las llaves han fallado.' };
+}
+
 const artEl = (t, cls='') => {
   const d = document.createElement('div');
   d.className = 'art ' + cls;
