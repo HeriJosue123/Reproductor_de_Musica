@@ -984,9 +984,11 @@ async function loadTrack(i, autoplay=true){
   
   if (!t.yt) {
     toast('Cargando audio...');
-    const ytData = await searchYouTube(t.artist + ' ' + t.title + ' audio oficial');
+    const ytData = await searchYouTube(t.artist + ' ' + t.title);
     if (ytData.items && ytData.items.length > 0) {
-      t.yt = ytData.items[0].yt;
+      t.ytList = ytData.items.map(x => x.yt);
+      t.ytIndex = 0;
+      t.yt = t.ytList[0];
     } else {
       toast('No se encontró audio para: ' + t.title);
       setTimeout(next, 2000);
@@ -1087,7 +1089,15 @@ function onYTState(e){
   }
 }
 function onYTError(){
-  toast('No se pudo reproducir «' + cur().title + '», paso a la siguiente…');
+  const t = cur();
+  if (t.ytList && t.ytIndex !== undefined && t.ytIndex < t.ytList.length - 1) {
+    t.ytIndex++;
+    t.yt = t.ytList[t.ytIndex];
+    if(pendingId) pendingId = t.yt;
+    if(yt && ytReady) loadYT(t.yt, true);
+    return;
+  }
+  toast('No se pudo reproducir «' + t.title + '», paso a la siguiente.');
   setTimeout(next, 1400);
 }
 
