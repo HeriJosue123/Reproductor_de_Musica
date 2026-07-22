@@ -638,7 +638,7 @@ async function buildHome(){
   if(LIB.length === 0){
     q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Cargando recomendaciones...</p></div>';
     try {
-      const data = await searchAppleMusic('exitos latinos oficiales');
+      const data = await searchAppleMusic('exitos reggaeton');
       if(data.items && data.items.length > 0) {
         LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt, it.thumb));
       } else {
