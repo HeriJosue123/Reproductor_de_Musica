@@ -406,20 +406,6 @@ svg{display:block}
     <div id="profileList"></div>
   </section>
 
-  <!-- ============ MINI REPRODUCTOR ============ -->
-  <div class="mini" id="mini">
-    <div class="art" id="miniArt"></div>
-    <div class="meta">
-      <h4 id="miniTitle">—</h4>
-      <p id="miniArtist">—</p>
-    </div>
-    <button class="icon-btn" id="miniPlay" style="color:var(--text)"></button>
-    <button class="icon-btn" id="miniNext" style="color:var(--text)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5l11 7-11 7z"/><rect x="17" y="5" width="2.4" height="14" rx="1"/></svg>
-    </button>
-    <div class="mini-bar"><i id="miniBar"></i></div>
-  </div>
-
   <!-- ============ NAV ============ -->
   <nav class="nav" id="nav">
     <button data-tab="home" class="active">
@@ -429,6 +415,9 @@ svg{display:block}
     <button data-tab="search">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       Buscar
+    </button>
+    <button class="fab" id="fabBtn" title="Abrir reproductor">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="10" width="2.6" height="4" rx="1.3"/><rect x="6.4" y="7" width="2.6" height="10" rx="1.3"/><rect x="10.7" y="3" width="2.6" height="18" rx="1.3"/><rect x="15" y="7" width="2.6" height="10" rx="1.3"/><rect x="19.4" y="10" width="2.6" height="4" rx="1.3"/></svg>
     </button>
     <button data-tab="library">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8v8M12 6v12M16 9v6"/></svg>
@@ -625,13 +614,29 @@ async function buildHome(){
       const data = await r.json();
       if(data.items && data.items.length > 0) {
         LIB = data.items.map(it => mk(it.title, it.artist, 0, it.yt));
-        loadTrack(0, false);
-        buildSearchIdle(); buildLibrary();
+      } else {
+        throw new Error('Sin resultados (posible límite de API)');
       }
     } catch(e) {
-      q.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Error al conectar con YouTube</p></div>';
-      return;
+      // Fallback a canciones por defecto si la API falla o llega al límite
+      const fallbacks = [
+        {title: 'PERRO NEGRO', artist: 'Bad Bunny, Feid', yt: 'xl518w3vMng'},
+        {title: 'QLONA', artist: 'Karol G, Peso Pluma', yt: '35TqB6QnXYI'},
+        {title: 'LADY GAGA', artist: 'Peso Pluma, Gabito Ballesteros, Junior H', yt: '3tXw-xQ17yA'},
+        {title: 'UN PREVIEW', artist: 'Bad Bunny', yt: '62Wp9TntVjM'},
+        {title: 'LUNA', artist: 'Feid, ATL Jacob', yt: 'yO76KzN7iR4'},
+        {title: 'MI EX TENÍA RAZÓN', artist: 'Karol G', yt: 'zV2M7Qo1uYk'},
+        {title: 'MONACO', artist: 'Bad Bunny', yt: 'G2eL-x4xHws'},
+        {title: 'PROVENZA', artist: 'Karol G', yt: 'ca48oMV59LU'},
+        {title: 'LA JUMPA', artist: 'Arcangel, Bad Bunny', yt: 'VbA7OQ72KzQ'},
+        {title: 'Lala', artist: 'Myke Towers', yt: 'f72i6l_PqZk'},
+        {title: 'CLASSY 101', artist: 'Feid, Young Miko', yt: 'uJvY79iFmJ0'},
+        {title: 'TQM', artist: 'Fuerza Regida', yt: 'fC9p-k1u6cI'}
+      ];
+      LIB = fallbacks.map(it => mk(it.title, it.artist, 0, it.yt));
     }
+    loadTrack(0, false);
+    buildSearchIdle(); buildLibrary();
   }
 
   q.innerHTML = '';
@@ -965,9 +970,6 @@ function paint(){
   $('#seekFill').style.width = (p*100)+'%';
   $('#seekKnob').style.left = (p*100)+'%';
   $('#tCur').textContent = fmt(state.t);
-  $('#miniBar').style.width = (p*100)+'%';
-
-  // removed wave ring paint logic
 }
 
 /* Se ejecuta cada 250 ms mientras suena: lee el tiempo real de YouTube */
@@ -991,8 +993,6 @@ function tickReal(){
 function setPlaying(on){
   state.playing = on;
   $('#playBtn').innerHTML = on ? ICON.pauseBig : ICON.playBig;
-  $('#miniPlay').innerHTML = on ? ICON.pause : ICON.play;
-  $('#mini').classList.add('up');
   clearInterval(state.timer);
   if(on) state.timer = setInterval(tickReal, 250);
 }
@@ -1090,10 +1090,8 @@ function go(tab){
 
 /* ---------- eventos ---------- */
 $$('#nav button[data-tab]').forEach(b => b.onclick = () => go(b.dataset.tab));
+$('#fabBtn').onclick = openPlayer;
 $('#closePlayer').onclick = closePlayer;
-$('#mini').onclick = e => { if(!e.target.closest('button')) openPlayer(); };
-$('#miniPlay').onclick = e => { e.stopPropagation(); play(); };
-$('#miniNext').onclick = e => { e.stopPropagation(); next(); };
 $('#playBtn').onclick = () => play();
 $('#nextBtn').onclick = next;
 $('#prevBtn').onclick = prev;
@@ -1138,9 +1136,7 @@ $$('[data-goto]').forEach(a => a.onclick = e => { e.preventDefault(); go(a.datas
 /* ---------- arranque ---------- */
 buildHome(); buildSearchIdle(); buildLibrary(); buildProfile();
 $('#playBtn').innerHTML = ICON.playBig;
-$('#miniPlay').innerHTML = ICON.play;
 renderTrack();
-setTimeout(()=>$('#mini').classList.add('up'), 500);
 </script>
 <!-- API de reproducción de YouTube (motor de audio) -->
 <script src="https://www.youtube.com/iframe_api"></script>
