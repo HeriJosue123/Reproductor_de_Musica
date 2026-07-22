@@ -389,6 +389,18 @@ svg{display:block}
     <div id="profileList"></div>
   </section>
 
+  <!-- ============ MINI PLAYER ============ -->
+  <div class="mini" id="miniPlayer">
+    <div id="mArt"></div>
+    <div class="meta" id="mMeta" style="margin-left:12px;">
+      <h4 id="mTitle"></h4>
+      <p id="mArtist"></p>
+    </div>
+    <button class="icon-btn" id="mPlay" style="margin-right:4px; width:48px; height:48px; display:flex; align-items:center; justify-content:center;">
+    </button>
+    <div class="mini-bar"><i id="mBar"></i></div>
+  </div>
+
   <!-- ============ NAV ============ -->
   <nav class="nav" id="nav">
     <button data-tab="home" class="active">
@@ -904,6 +916,12 @@ function renderTrack(){
   $('#pTopArtist').textContent = t.artist;
   $('#tTot').textContent = fmt(t.dur);
   $('#likeBtn').classList.toggle('on', state.liked.has(state.idx));
+  
+  $('#mTitle').textContent = t.title;
+  $('#mArtist').textContent = t.artist;
+  $('#mArt').innerHTML = ''; $('#mArt').append(artEl(t));
+  $('#miniPlayer').classList.add('up');
+
   renderStage(); renderPanel();
   buildHome();
   if($('#searchInput').value) runSearch($('#searchInput').value);
@@ -916,6 +934,7 @@ function paint(){
   const p = t.dur ? Math.min(1, state.t / t.dur) : 0;
   $('#seekFill').style.width = (p*100)+'%';
   $('#seekKnob').style.left = (p*100)+'%';
+  $('#mBar').style.width = (p*100)+'%';
   $('#tCur').textContent = fmt(state.t);
 }
 
@@ -940,6 +959,7 @@ function tickReal(){
 function setPlaying(on){
   state.playing = on;
   $('#playBtn').innerHTML = on ? ICON.pauseBig : ICON.playBig;
+  $('#mPlay').innerHTML = on ? ICON.pauseBig : ICON.playBig;
   if(on) {
     $('#player').classList.add('playing');
   } else {
@@ -1083,6 +1103,10 @@ function go(tab){
 $$('#nav button[data-tab]').forEach(b => b.onclick = () => go(b.dataset.tab));
 $('#fabBtn').onclick = openPlayer;
 $('#closePlayer').onclick = closePlayer;
+$('#miniPlayer').onclick = (e) => {
+  if(e.target.closest('#mPlay')){ e.stopPropagation(); play(); return; }
+  openPlayer();
+};
 $('#playBtn').onclick = () => play();
 $('#nextBtn').onclick = next;
 $('#prevBtn').onclick = prev;
