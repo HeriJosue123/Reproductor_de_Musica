@@ -1056,7 +1056,6 @@ $('#repeatBtn').onclick = e => {
   e.currentTarget.classList.toggle('on', state.repeat);
   toast(state.repeat ? 'Repetir canción activado' : 'Repetir desactivado');
 };
-$('#switchView').onclick = () => { state.view = state.view === 'queue' ? 'lyrics' : 'queue'; renderStage(); renderPanel(); paint(); };
 $('#seekBar').onclick = e => {
   const r = e.currentTarget.getBoundingClientRect();
   seekTo(Math.max(0, Math.min(1,(e.clientX-r.left)/r.width)) * cur().dur);
