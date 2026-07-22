@@ -219,30 +219,33 @@ nav button.active {
 .track-info h2{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .track-info .artist{font-size:15px;font-weight:500;color:rgba(255,255,255,0.6);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .track-actions{display:flex;gap:8px}
-.track-actions button{width:42px;height:42px;border-radius:21px;background:#1a1a1a;border:none;color:#fff;display:grid;place-items:center;cursor:pointer}
-.track-actions button svg{width:20px;height:20px}
-.track-actions button.like.on{color:#fcd4d4}
+.track-actions button{width:48px;height:48px;border-radius:14px;background:#1e1e1e;border:none;color:#fff;display:grid;place-items:center;cursor:pointer;transition:transform 0.1s}
+.track-actions button:active{transform:scale(0.9)}
+.track-actions button svg{width:22px;height:22px}
+.track-actions button.like.on{color:#fff; background:#2a2a2a}
 .track-actions button.like.on svg{fill:currentColor}
 
-.seek{padding:24px 24px 12px}
-.seek .bar{height:6px;background:rgba(255,255,255,.14);border-radius:4px;position:relative;cursor:pointer}
-.seek .bar .fill{height:100%;background:#fff;border-radius:4px;width:0}
-.seek .bar .knob{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);left:0}
-.seek .times{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;font-weight:500;font-variant-numeric:tabular-nums}
+.seek{padding:32px 24px 16px}
+.seek .bar{height:12px;background:rgba(255,255,255,.15);border-radius:6px;position:relative;cursor:pointer}
+.seek .bar .fill{height:100%;background:#e5e5e5;border-radius:6px;width:0}
+.seek .bar .knob{position:absolute;top:50%;width:4px;height:24px;border-radius:2px;background:#fff;transform:translate(-50%,-50%);left:0}
+.seek .times{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.7);margin-top:14px;font-weight:600;font-variant-numeric:tabular-nums}
 
-.controls{display:flex;align-items:center;justify-content:space-between;padding:0 24px 24px}
-.controls button{background:none;border:none;color:#fff;cursor:pointer;display:flex;padding:6px;transition:transform 0.1s}
+.controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 24px 32px}
+.controls button{background:#1e1e1e;border:none;color:#fff;cursor:pointer;display:grid;place-items:center;transition:transform 0.1s, color 0.1s;width:56px;height:56px;border-radius:16px}
 .controls button:active{transform:scale(0.9)}
-.controls button.sm{color:rgba(255,255,255,0.5)}
+.controls button.sm{width:48px;height:48px;border-radius:14px;color:rgba(255,255,255,0.6)}
+.controls button.sm.on{color:#fff;background:#2a2a2a}
 .play-btn{
-  width:96px;height:84px;border-radius:36px;
-  background:#fcd4d4 !important;
-  display:grid;place-items:center;color:#000!important;
+  width:96px !important;height:84px !important;border-radius:28px !important;
+  background:#e5e5e5 !important;
+  color:#000 !important;
+  margin:0 8px;
 }
-.play-btn svg{width:32px;height:32px;fill:currentColor}
+.play-btn svg{width:36px;height:36px;fill:currentColor}
 
 .util-bar{display:flex;align-items:center;justify-content:space-between;padding:0 24px 32px;gap:12px;margin-top:auto}
-.util-btn{flex:1;height:48px;border-radius:24px;background:#1a1a1a;border:none;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer}
+.util-btn{flex:1;height:48px;border-radius:24px;background:#1e1e1e;border:none;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer}
 .util-btn.circle{flex:0 0 48px;padding:0}
 
 /* ---------- Aviso emergente (toast) ---------- */
