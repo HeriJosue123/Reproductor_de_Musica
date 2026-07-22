@@ -28,10 +28,27 @@ Publicada con GitHub Pages en:
 
 El botón de los tres puntos en la esquina superior derecha del reproductor alterna entre las dos variantes.
 
+## Búsqueda en vivo (YouTube Data API v3)
+
+La pantalla de Buscar consulta YouTube en tiempo real a través de una función
+serverless (`api/search.js`), para que la API key nunca quede expuesta en el
+código público.
+
+Para activarla:
+
+1. Crea una API key en [Google Cloud Console](https://console.cloud.google.com):
+   habilita **YouTube Data API v3** y genera una **Clave de API**.
+2. En Vercel → **Settings → Environment Variables** añade
+   `YOUTUBE_API_KEY` con el valor de tu clave.
+3. Vuelve a desplegar (**Redeploy**).
+
+Sin la variable configurada, la app sigue funcionando con la biblioteca de
+demostración; la sección "En YouTube" solo avisa que falta la key.
+
 ## Pendiente
 
 - [x] Integrar IFrame Player API para reproducción real (audio de prueba con IDs fijos)
-- [ ] Conectar YouTube Data API v3 para búsqueda y metadatos en vivo
+- [x] Conectar YouTube Data API v3 para búsqueda en vivo (requiere `YOUTUBE_API_KEY`)
 - [ ] Persistencia de playlists y favoritos en localStorage
 - [ ] Definir función del botón central de la barra de navegación
 - [ ] Reordenamiento por arrastre en la cola

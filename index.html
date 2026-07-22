@@ -664,20 +664,17 @@ function buildSearchIdle(){
   });
 }
 
+let searchSeq = 0, ytTimer = null;
 function runSearch(q){
   const res = $('#searchResults'), idle = $('#searchIdle');
-  if(!q.trim()){ res.style.display='none'; idle.style.display=''; return; }
+  if(!q.trim()){ res.style.display='none'; idle.style.display=''; clearTimeout(ytTimer); return; }
   idle.style.display='none'; res.style.display=''; res.innerHTML='';
   const term = q.toLowerCase();
   const hits = LIB.filter(t => (t.title+' '+t.artist).toLowerCase().includes(term));
   const artists = [...new Set(LIB.filter(t=>t.artist.toLowerCase().includes(term)).map(t=>t.artist.split(',')[0]))];
 
-  if(!hits.length && !artists.length){
-    res.innerHTML = `<div class="empty"><h3>Sin resultados para "${q.replace(/</g,'&lt;')}"</h3><p>Revisa la escritura o prueba con el nombre del artista.</p></div>`;
-    return;
-  }
   if(artists.length){
-    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>Artistas</h2><a href="#">Ver todo</a></div>`);
+    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>Artistas</h2></div>`);
     artists.slice(0,3).forEach(a=>{
       const t = LIB.find(x=>x.artist.startsWith(a));
       const r = document.createElement('div'); r.className='artist-row';
@@ -692,9 +689,74 @@ function runSearch(q){
     });
   }
   if(hits.length){
-    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>Canciones</h2><a href="#">Ver todo</a></div>`);
+    res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En tu biblioteca</h2></div>`);
     hits.slice(0,8).forEach(t => res.append(songRow(t, LIB.indexOf(t))));
   }
+  // Búsqueda en vivo en YouTube (con debounce para no gastar cuota de más)
+  scheduleYT(q);
+}
+
+function scheduleYT(q){
+  clearTimeout(ytTimer);
+  const seq = ++searchSeq;
+  ytTimer = setTimeout(() => fetchYT(q, seq), 350);
+}
+
+async function fetchYT(q, seq){
+  const res = $('#searchResults');
+  res.insertAdjacentHTML('beforeend', `<div class="pad section-head"><h2>En YouTube</h2></div>`);
+  const loading = document.createElement('div');
+  loading.className = 'empty'; loading.style.padding = '24px';
+  loading.innerHTML = '<p>Buscando en YouTube…</p>';
+  res.append(loading);
+  try{
+    const r = await fetch('/api/search?q=' + encodeURIComponent(q));
+    if(seq !== searchSeq) return;          // llegó una búsqueda más nueva, ignora esta
+    const data = await r.json();
+    if(seq !== searchSeq) return;
+    loading.remove();
+    if(data.error){
+      const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
+      e.innerHTML = /YOUTUBE_API_KEY/.test(data.error)
+        ? '<p>Falta configurar la API key de YouTube en Vercel para buscar en vivo.<br>(Mientras tanto, arriba están las de tu biblioteca.)</p>'
+        : '<p>No se pudo buscar en YouTube ahora mismo.</p>';
+      res.append(e); return;
+    }
+    if(!data.items || !data.items.length){
+      const e = document.createElement('div'); e.className='empty'; e.style.padding='18px 24px';
+      e.innerHTML = '<p>Sin resultados en YouTube.</p>';
+      res.append(e); return;
+    }
+    data.items.forEach(it => res.append(ytRow({ yt:it.yt, title:it.title, artist:it.artist, dur:0 })));
+  }catch(e){
+    if(seq !== searchSeq) return;
+    loading.innerHTML = '<p>Sin conexión con el buscador.</p>';
+  }
+}
+
+function ytRow(t){
+  const r = document.createElement('div'); r.className='row';
+  r.append(artEl(t));
+  const m = document.createElement('div'); m.className='meta';
+  m.innerHTML = '<h4></h4><p></p>';
+  m.querySelector('h4').textContent = t.title;
+  m.querySelector('p').textContent = t.artist;
+  r.append(m);
+  const k = document.createElement('span'); k.className='kebab'; k.innerHTML = ICON.play;
+  r.append(k);
+  r.onclick = () => playExternal(t);
+  return r;
+}
+
+// Reproduce una canción encontrada en YouTube (la agrega a la biblioteca si es nueva)
+function playExternal(t){
+  let i = LIB.findIndex(x => x.yt === t.yt);
+  if(i < 0){
+    const g = grad();
+    t.c1 = g[0]; t.c2 = g[1]; t.album = t.title; t.dur = t.dur || 0;
+    LIB.push(t); i = LIB.length - 1;
+  }
+  loadTrack(i, true); openPlayer();
 }
 
 function buildLibrary(){
@@ -851,7 +913,6 @@ function renderTrack(){
   }
   renderStage(); renderPanel();
   buildHome();
-  if($('#searchInput').value) runSearch($('#searchInput').value);
   paint();
 }
 
