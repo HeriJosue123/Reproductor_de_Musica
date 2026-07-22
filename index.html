@@ -599,9 +599,6 @@ function addToQueue(i){
 
 /* ---------- construir pantallas ---------- */
 async function buildHome(){
-  const hr = new Date().getHours();
-  $('#greeting').textContent = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
-
   const q = $('#quickGrid');
   const rs = $('#recentShelf');
   const ms = $('#mixShelf');
