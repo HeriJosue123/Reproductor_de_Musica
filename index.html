@@ -587,7 +587,7 @@ const artEl = (t, cls='') => {
     const img = document.createElement('img');
     img.className = 'art-img'; img.alt = '';
     const hi = cls.includes('cover');           // carátula grande del reproductor
-    const srcs = hi ? ['maxresdefault','hqdefault','0'] : ['mqdefault','hqdefault','0'];
+    const srcs = hi ? ['maxresdefault','hqdefault','0'] : ['hqdefault','mqdefault','0'];
     let k = 0;
     const set = () => img.src = 'https://i.ytimg.com/vi/' + t.yt + '/' + srcs[k] + '.jpg';
     img.onload = () => { if(img.naturalWidth === 120 && k < srcs.length - 1){ k++; set(); } };
@@ -866,7 +866,9 @@ async function fetchYT(q, seq){
       res.append(e); return;
     }
     const ranked = rankByRelevance(q, data.items);
-    (ranked.length ? ranked : data.items).forEach(it => res.append(ytRow({ yt:it.yt, title:it.title, artist:it.artist, dur:0, cover:it.thumb })));
+    // Sin "cover" a propósito: así usa la miniatura HD de YouTube (maxresdefault)
+    // del propio video, en vez de la versión chica que da la búsqueda.
+    (ranked.length ? ranked : data.items).forEach(it => res.append(ytRow({ yt:it.yt, title:it.title, artist:it.artist, dur:0 })));
   }catch(e){
     if(seq !== searchSeq) return;
     loading.remove();
