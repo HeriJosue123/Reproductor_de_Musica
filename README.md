@@ -2,7 +2,8 @@
 
 Aplicación web de reproducción musical. Diseño móvil, tema oscuro con acento morado.
 
-**Estado actual:** shell de interfaz completo con datos de demostración. Sin conexión a API todavía.
+**Estado actual:** interfaz completa con audio real de prueba. Cada canción de demostración
+reproduce su video de YouTube mediante la IFrame Player API (solo audio, reproductor oculto).
 
 ## Estructura
 
@@ -29,8 +30,8 @@ El botón de los tres puntos en la esquina superior derecha del reproductor alte
 
 ## Pendiente
 
-- [ ] Conectar YouTube Data API v3 para búsqueda y metadatos
-- [ ] Integrar IFrame Player API para reproducción real
+- [x] Integrar IFrame Player API para reproducción real (audio de prueba con IDs fijos)
+- [ ] Conectar YouTube Data API v3 para búsqueda y metadatos en vivo
 - [ ] Persistencia de playlists y favoritos en localStorage
 - [ ] Definir función del botón central de la barra de navegación
 - [ ] Reordenamiento por arrastre en la cola
