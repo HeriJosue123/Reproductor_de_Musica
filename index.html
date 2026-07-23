@@ -1311,12 +1311,14 @@ function prev(){
   if(state.t > 4){ seekTo(0); return; }
   loadTrack((state.idx-1+LIB.length)%LIB.length, true);
 }
-/* El reproductor abierto cuenta como "un paso" en el historial del navegador.
-   Así, el botón/gesto de atrás (del navegador o del celular) cierra primero
-   el reproductor, en vez de salirse de toda la app de un solo golpe. */
+/* El reproductor abierto y cada pestaña que no sea Inicio cuentan como "un
+   paso" en el historial del navegador. Así, el botón/gesto de atrás (del
+   navegador o del celular) retrocede de a un paso dentro de la app —
+   cierra el reproductor, o te manda de Biblioteca/Buscar a Inicio — en
+   vez de salirse de toda la app de un solo golpe. */
 function openPlayer(){
   $('#player').classList.add('open');
-  history.pushState({ opentunePlayer:true }, '');
+  history.pushState({ opentunePlayer:true, opentuneTab: state.tab }, '');
 }
 function closePlayer(){
   if(history.state && history.state.opentunePlayer){
@@ -1326,7 +1328,9 @@ function closePlayer(){
   }
 }
 window.addEventListener('popstate', e => {
-  if(!(e.state && e.state.opentunePlayer)) $('#player').classList.remove('open');
+  const s = e.state;
+  $('#player').classList.toggle('open', !!(s && s.opentunePlayer));
+  applyTab((s && s.opentuneTab) || 'home');
 });
 
 /* ---------- Aviso emergente ---------- */
@@ -1488,11 +1492,27 @@ function onYTError(){
 }
 
 /* ---------- navegación ---------- */
-function go(tab){
+function applyTab(tab){
   state.tab = tab;
   $$('.screen').forEach(s=>s.classList.toggle('active', s.id === 's-'+tab));
   $$('#nav button[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab === tab));
   if(tab === 'search') setTimeout(()=>$('#searchInput').focus(), 120);
+}
+function go(tab){
+  // Volver a Inicio desde otra pestaña: deja que popstate haga el cambio
+  // visual, así el historial queda consistente (nunca dos pasos "Inicio").
+  if(tab === 'home' && history.state && history.state.opentuneTab){
+    history.back();
+    return;
+  }
+  applyTab(tab);
+  if(tab !== 'home'){
+    if(history.state && history.state.opentuneTab){
+      history.replaceState({ opentuneTab: tab }, '');   // cambio lateral: no apila
+    } else {
+      history.pushState({ opentuneTab: tab }, '');        // primera vez que sales de Inicio
+    }
+  }
 }
 
 /* ---------- eventos ---------- */
